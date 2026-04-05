@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="en" style="background:#0a0a0a;background-color:#0a0a0a">
+<head>
+<meta charset="UTF-8">
+<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Deal Health Pro">
+<meta name="theme-color" content="#E20074">
+<style>
+#install-hint{display:none;position:fixed;bottom:calc(60px + env(safe-area-inset-bottom) + 8px);left:12px;right:12px;z-index:2000;background:#1d1d1f;color:#fff;border-radius:14px;padding:13px 16px;font-size:13px;line-height:1.5;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+#install-hint b{display:block;font-size:14px;margin-bottom:3px}
+#install-hint .close-hint{position:absolute;top:10px;right:14px;background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0;line-height:1}
+
+/* TOAST NOTIFICATION */
+.toast{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom));right:12px;left:12px;max-width:400px;background:#0a2e14;color:#4cd97b;border-radius:12px;padding:14px 16px;font-size:13px;font-weight:600;z-index:2001;animation:slideUp 0.3s ease-out;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+@keyframes slideUp{from{transform:translateY(120px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toast.fade-out{animation:slideDown 0.3s ease-out forwards}
+@keyframes slideDown{to{transform:translateY(120px);opacity:0}}
+
+/* SPINNER */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#E20074;border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* HEALTH SNAPSHOT - PHASE 1 */
+#d-health-snapshot{background:linear-gradient(135deg,#1c1c1e 0%,#2c2c2e 100%);border-radius:14px;padding:15px;margin-bottom:14px;border:1px solid rgba(226,0,116,.2);transition:all 0.3s ease}
+#d-health-snapshot.health-good{border-color:#0d5c2a;background:linear-gradient(135deg,rgba(13,92,42,.1) 0%,rgba(76,217,123,.05) 100%)}
+#d-health-snapshot.health-warn{border-color:#7a5400;background:linear-gradient(135deg,rgba(122,84,0,.1) 0%,rgba(255,214,10,.05) 100%)}
+#d-health-snapshot.health-bad{border-color:#9a3800;background:linear-gradient(135deg,rgba(154,56,0,.1) 0%,rgba(255,140,66,.05) 100%)}
+.snap-title{font-size:11px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
+.snap-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:10px}
+.snap-cell{background:#2c2c2e;border-radius:10px;padding:12px;text-align:center}
+.snap-label{font-size:11px;color:#8e8e93;margin-bottom:3px;font-weight:500}
+.snap-value{font-size:18px;font-weight:700;color:#f5f5f7}
+.snap-status{grid-column:1/-1;background:transparent;padding:0;text-align:center;font-size:13px}
+.snap-status-badge{display:inline-block;padding:6px 14px;border-radius:20px;font-weight:600}
+.snap-status-good{background:#0d5c2a;color:#4cd97b}
+.snap-status-warn{background:#7a5400;color:#ffd60a}
+.snap-status-bad{background:#9a3800;color:#ff8c42}
+
+/* HEALTH BAR */
+.health-bar-container{margin-bottom:10px}
+.health-bar{background:#3a3a3c;border-radius:8px;height:8px;overflow:hidden;margin-bottom:6px}
+.health-bar-fill{height:100%;border-radius:8px;transition:width 0.4s ease,background-color 0.4s ease}
+.health-bar-text{display:flex;justify-content:space-between;font-size:11px;color:#8e8e93;font-weight:600}
+
+/* SUGGESTIONS ALERT */
+.snap-suggestions{background:#0d1a2e;border-radius:10px;padding:10px 12px;border-left:3px solid #5ba3f5;font-size:12px;color:#b8d4ff;line-height:1.5}
+
+/* ANIMATIONS & TRANSITIONS */
+.fade-in{animation:fadeIn 0.3s ease-out}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+.slide-up{animation:slideUpIn 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes slideUpIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+.pulse{animation:pulse 0.5s ease}
+@keyframes pulse{50%{background-color:rgba(226,0,116,.2)}}
+
+/* BUTTON STATES */
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.btn:not(:disabled):active{transform:scale(0.98);opacity:0.9}
+.btn-loading{pointer-events:none;position:relative}
+.btn-loading::after{content:'';position:absolute;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;right:14px;top:50%;transform:translateY(-50%)}
+
+/* CONTACT CARD ANIMATIONS */
+.cc{animation:slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);transition:all 0.3s ease}
+.cc.removing{animation:fadeOut 0.3s ease-out forwards}
+@keyframes fadeOut{to{opacity:0;transform:translateX(-20px)}}
+
+/* PRODUCT BLOCK ANIMATIONS */
+.blk{animation:slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+.blk-add-confirm{position:relative;margin-left:30px}
+.blk-add-confirm::before{content:'✓';position:absolute;left:-28px;top:8px;color:#0d5c2a;font-size:20px;font-weight:700;animation:checkBounce 0.5s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes checkBounce{0%{transform:scale(0);opacity:0}50%{transform:scale(1.2)}to{transform:scale(1);opacity:1}}
+
+/* FORM VALIDATION */
+.form-error{border-color:#ff8c42 !important;background:#2e0f00 !important}
+.inline-warning{background:#2a1f00;border-left:3px solid #ffd60a;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:#ffd60a;line-height:1.5}
+.inline-error{background:#2e0f00;border-left:3px solid #ff8c42;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:#ff8c42;line-height:1.5}
+.inline-success{background:#0a2e14;border-left:3px solid #4cd97b;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:#4cd97b;line-height:1.5}
+</style>
+<title>Deal Health Pro — Enhanced</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%}
+:root{background-color:#0a0a0a!important;color-scheme:dark}html,body{background:#0a0a0a!important;background-color:#0a0a0a!important}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:16px;line-height:1.6;background:#0a0a0a;color:#f5f5f7;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+/* BOTTOM TAB BAR — iOS native pattern */
+#tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:1000;display:flex;background:rgba(15,15,15,0.97);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-top:0.5px solid rgba(0,0,0,0.15);padding-bottom:env(safe-area-inset-bottom)}
+.tb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 2px 4px;border:none;background:none;cursor:pointer;font-family:inherit;color:#8e8e93;font-size:9px;font-weight:400;gap:2px;min-height:50px;transition:color 0.2s ease}
+.tb.on{color:#E20074;font-weight:600}
+.tb:active{opacity:0.7}
+.tb svg{width:22px;height:22px;stroke-width:1.8;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;transition:stroke 0.2s ease}
+
+/* SCREENS */
+#app{padding-bottom:calc(60px + env(safe-area-inset-bottom));min-height:100vh;background:#0a0a0a}
+.screen{display:none;padding:12px 12px 4px;background:#0a0a0a;animation:fadeIn 0.3s ease}
+.screen.on{display:block}
+
+/* DEAL HEALTH SUB-TABS */
+.sub-tabs{display:flex;gap:6px;overflow-x:auto;padding:0 0 8px;background:#0a0a0a;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.sub-tabs::-webkit-scrollbar{display:none}
+.stab{flex-shrink:0;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:500;border:1.5px solid #d1d1d6;background:#1c1c1e;color:#8e8e93;cursor:pointer;font-family:inherit;transition:all 0.2s ease}
+.stab.on{background:#E20074;color:#fff;border-color:#E20074;transform:scale(1.05)}
+.stab:active{opacity:0.8}
+.dpanel{display:none}
+.dpanel.on{display:block;animation:fadeIn 0.3s ease}
+
+/* CARDS */
+.card{background:#1c1c1e!important;border-radius:14px;padding:15px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);animation:slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+.card-title{font-size:11px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px}
+
+/* FORMS */
+label{font-size:13px;color:#6d6d72;display:block;margin-bottom:5px;margin-top:12px;font-weight:500}
+label:first-child{margin-top:0}
+input,select,textarea{width:100%;background:#2c2c2e!important;border:1px solid #3a3a3c!important;border-radius:10px;padding:11px 13px;font-size:16px;font-family:inherit;color:#f5f5f7!important;-webkit-appearance:none!important;appearance:none!important;outline:none;transition:all 0.2s ease}
+input:focus,select:focus,textarea:focus{border-color:#E20074;background:#2c2c2e;box-shadow:0 0 0 3px rgba(226,0,116,0.1)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238e8e93' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
+textarea{resize:vertical;min-height:76px;line-height:1.5;font-size:15px}
+optgroup{font-weight:700;font-size:11px}
+
+/* BUTTONS */
+.btn{display:block;width:100%;padding:14px;border-radius:12px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;border:none;text-align:center;transition:all 0.2s ease}
+.btn-pink{background:#E20074;color:#fff}
+.btn-pink:active{opacity:.8;transform:scale(.98)}
+.btn-purple{background:#534AB7;color:#fff}
+.btn-purple:active{opacity:.8;transform:scale(.98)}
+.btn-gray{background:#2c2c2e;color:#f5f5f7;border:1px solid #3a3a3c}
+.btn-gray:active{opacity:.8}
+.bsm{display:inline-flex;align-items:center;padding:8px 14px;border-radius:9px;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:inherit;transition:all 0.2s ease}
+.bsm-g{background:#2c2c2e;color:#f5f5f7}
+.bsm-g:active{opacity:0.7;transform:scale(0.95)}
+.bsm-r{background:#fff0f0;color:#c0392b}
+.bsm-r:active{opacity:0.7;transform:scale(0.95)}
+
+/* GRID */
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+/* CRM BADGES */
+.badge{display:inline-block;font-size:11px;padding:3px 9px;border-radius:10px;font-weight:700}
+.bn{background:#d1f0d9;color:#0d5c2a}
+.bf{background:#fff3cc;color:#7a5400}
+.bh{background:#fde8d3;color:#9a3800}
+.bc{background:#dce8fd;color:#1a3a8f}
+.bd{background:#2c2c2e;color:#8e8e93}
+
+/* CONTACT CARDS */
+.cc{background:#1c1c1e;border-radius:12px;padding:13px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:all 0.3s ease}
+.cc:hover{box-shadow:0 2px 8px rgba(226,0,116,0.15)}
+.cc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px}
+.cc-biz{font-size:15px;font-weight:600;line-height:1.3}
+.cc-meta{font-size:12px;color:#8e8e93;margin-bottom:7px;line-height:1.5}
+.cc-note{font-size:13px;line-height:1.5;background:#2c2c2e;border-radius:8px;padding:9px 11px;margin-bottom:9px}
+.cc-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.filter-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.filter-row::-webkit-scrollbar{display:none}
+.fp{flex-shrink:0;padding:7px 16px;border-radius:20px;font-size:13px;cursor:pointer;border:1.5px solid #d1d1d6;background:#1c1c1e;color:#8e8e93;font-family:inherit;transition:all 0.2s ease}
+.fp.on{background:#E20074;color:#fff;border-color:#E20074;transform:scale(1.05)}
+.fp:active{opacity:0.8}
+.empty{text-align:center;padding:36px 16px;color:#6d6d72;font-size:14px;line-height:1.7}
+
+/* CALC */
+.res-box{background:#2c2c2e;border-radius:12px;padding:13px;margin-bottom:10px}
+.res-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:.5px solid #d1d1d6}
+.res-row:last-child{border-bottom:none}
+.res-lbl{font-size:13px;color:#8e8e93}
+.res-val{font-size:14px;font-weight:600}
+.wv{color:#0d5c2a}.lv{color:#9a3800}
+.big-save{text-align:center;padding:18px;background:#0a2e14;border-radius:12px;margin-bottom:12px;border:1px solid rgba(76,217,123,0.2)}
+.big-save .amt{font-size:36px;font-weight:700;color:#0d5c2a}
+.big-save .lbl{font-size:13px;color:#1b5e35;margin-top:3px}
+
+/* SCRIPTS */
+.sp-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.sp-row::-webkit-scrollbar{display:none}
+.sp{padding:8px 15px;border-radius:20px;font-size:13px;cursor:pointer;border:1.5px solid #d1d1d6;background:#1c1c1e;color:#8e8e93;font-family:inherit;flex-shrink:0;transition:all 0.2s ease}
+.sp.on{background:#E20074;color:#fff;border-color:#E20074;transform:scale(1.05)}
+.sp:active{opacity:0.8}
+.vscript{display:none}
+.vscript.on{display:block;animation:fadeIn 0.3s ease}
+.step-row{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin-bottom:13px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.step-row::-webkit-scrollbar{display:none}
+.stp{flex-shrink:0;padding:7px 14px;border-radius:16px;font-size:13px;cursor:pointer;border:1.5px solid #d1d1d6;background:#1c1c1e;color:#8e8e93;font-family:inherit;transition:all 0.2s ease}
+.stp.on{background:#2c2c2e;color:#f5f5f7;border-color:#8e8e93;font-weight:600}
+.stp:active{opacity:0.8}
+.script-step{display:none}
+.script-step.on{display:block;animation:fadeIn 0.3s ease}
+.step-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#E20074;margin-bottom:7px}
+.speech{background:#2c2c2e;border-radius:11px;padding:14px;font-size:14px;line-height:1.7;margin-bottom:9px;border-left:3px solid #E20074}
+.speech b{font-weight:600}
+.tip{background:#0d1a2e;border-radius:9px;padding:11px 13px;font-size:13px;color:#5ba3f5;line-height:1.5;border-left:3px solid #5ba3f5}
+
+/* DEAL HEALTH */
+.blk{background:#2c2c2e;border-radius:11px;padding:11px;margin-bottom:9px;transition:all 0.3s ease}
+.blk-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.blk-lbl{font-size:13px;font-weight:600}
+.rm{width:28px;height:28px;border-radius:50%;border:1px solid #d1d1d6;background:#1c1c1e;color:#8e8e93;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:inherit;line-height:1;transition:all 0.2s ease}
+.rm:active{opacity:0.7;transform:scale(0.95)}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px}
+.mc{background:#2c2c2e;border-radius:11px;padding:11px}
+.mv{font-size:21px;font-weight:700}
+.ml{font-size:11px;color:#8e8e93;margin-top:2px}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:.5px solid #2c2c2e;font-size:13px}
+.sr:last-child{border-bottom:none}
+.hp{font-size:11px;padding:3px 9px;border-radius:10px;font-weight:700}
+.hpg{background:#d1f0d9;color:#0d5c2a}
+.hpy{background:#fff3cc;color:#7a5400}
+.hpr{background:#fde8d3;color:#9a3800}
+.hpb{background:#dce8fd;color:#1a3a8f}
+.hbar{background:#3a3a3c;border-radius:4px;height:9px;overflow:hidden;margin:9px 0}
+.hfill{height:100%;border-radius:4px;transition:width .4s}
+.alert{padding:10px 12px;border-radius:10px;margin-bottom:8px;font-size:13px;line-height:1.5;font-weight:500;border-left:3px solid transparent}
+.ag{background:#0a2e14;color:#4cd97b;border-color:#0d5c2a}
+.ay{background:#2a1f00;color:#ffd60a;border-color:#7a5400}
+.ar{background:#2e0f00;color:#ff8c42;border-color:#9a3800}
+.ab{background:#0d1a2e;color:#5ba3f5;border-color:#1a3a8f}
+.tl-r{display:grid;grid-template-columns:54px 1fr;gap:8px;margin-bottom:8px;align-items:start;animation:slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+.tl-m{font-size:10px;font-weight:700;color:#8e8e93;padding-top:4px}
+.tl-o{background:#3a3a3c;border-radius:8px;overflow:hidden;height:27px}
+.tl-i{height:100%;display:flex;align-items:center;padding:0 9px;font-size:11px;font-weight:700;color:#fff;border-radius:8px}
+.sep{height:.5px;background:#3a3a3c;margin:14px 0}
+</style>
+<script>
+document.documentElement.style.backgroundColor='#0a0a0a';document.documentElement.style.setProperty('background-color','#0a0a0a','important');
+document.addEventListener('DOMContentLoaded',function(){
+  document.body.style.backgroundColor='#0a0a0a';
+  document.getElementById('app').style.backgroundColor='#0a0a0a';
+});
+</script>
+</head>
+<body style="background:#0a0a0a;color:#f5f5f7">
+<style>
+html{background:#0a0a0a!important}
+body{background:#0a0a0a!important}
+#app,#page-bg,.screen,.screen.on{background:#0a0a0a!important}
+</style>
+<div id="page-bg" style="position:fixed;top:-100px;left:-100px;right:-100px;bottom:-100px;background:#0a0a0a;z-index:-999"></div>
+<div id="app">
+
+<!-- ── CRM ─────────────────────────────── -->
+<div class="screen on" id="s-crm">
+  <div class="card">
+    <div class="card-title">New contact</div>
+    <label>Business name *</label>
+    <input id="f-biz" placeholder="e.g. Apex Logistics LLC" autocomplete="off" autocorrect="off">
+    <label>Contact name</label>
+    <input id="f-contact" placeholder="e.g. Maria Gonzalez" autocomplete="off">
+    <label>Phone</label>
+    <input id="f-phone" type="tel" placeholder="(281) 555-0100">
+    <label>Email</label>
+    <input id="f-email" type="email" placeholder="owner@business.com" autocomplete="off" autocapitalize="none">
+    <label>Wireless carrier</label>
+    <select id="f-wireless">
+      <option value="">Unknown</option>
+      <optgroup label="Major Carriers">
+        <option>Verizon</option>
+        <option>AT&amp;T</option>
+        <option>T-Mobile</option>
+        <option>Sprint (legacy)</option>
+      </optgroup>
+      <optgroup label="Budget/MVNO">
+        <option>MetroPCS</option>
+        <option>Boost Mobile</option>
+        <option>Cricket</option>
+        <option>Straight Talk</option>
+        <option>Consumer Cellular</option>
+        <option>Mint Mobile</option>
+        <option>Visible</option>
+      </optgroup>
+      <optgroup label="Other">
+        <option>Other carrier</option>
+        <option>No wireless service</option>
+      </optgroup>
+    </select>
+    <label>Internet service provider</label>
+    <select id="f-provider">
+      <option value="">Unknown</option>
+      <optgroup label="Cable/Fiber">
+        <option>Comcast / Xfinity</option>
+        <option>AT&amp;T Fiber</option>
+        <option>AT&amp;T DSL</option>
+        <option>Spectrum</option>
+        <option>Xfinity Business</option>
+        <option>Cox</option>
+        <option>CenturyLink / Lumen</option>
+        <option>Frontier</option>
+        <option>Optimum</option>
+      </optgroup>
+      <optgroup label="Other">
+        <option>Satellite (Starlink)</option>
+        <option>Fixed Wireless</option>
+        <option>Other ISP</option>
+        <option>No internet service</option>
+      </optgroup>
+    </select>
+    <div id="f-hasboth-wrap" style="display:flex;align-items:center;gap:10px;margin-top:10px;margin-bottom:4px;background:#2c2c2e;border-radius:10px;padding:11px 13px;cursor:pointer;transition:all 0.2s ease" onclick="var cb=document.getElementById('f-hasboth');cb.checked=!cb.checked;this.style.background=cb.checked?'#0a2e14':'#2c2c2e';this.style.borderColor=cb.checked?'#4cd97b':'transparent';this.style.borderWidth='1.5px';">
+      <input type="checkbox" id="f-hasboth" style="width:20px;height:20px;accent-color:#E20074;flex-shrink:0;cursor:pointer">
+      <label for="f-hasboth" style="margin:0;font-size:14px;color:#f5f5f7;cursor:pointer;line-height:1.4">Bundle deal -- wireless + internet same provider<br><span style="font-size:12px;color:#8e8e93">Tap to flag -- shows in contact card</span></label>
+    </div>
+    <div class="r2">
+      <div><label>ZIP code</label>
+        <select id="f-zip" onchange="var v=this.value;var o=document.getElementById('f-zip-other');o.style.display=v==='other'?'block':'none';if(v!=='other')o.value='';">
+          <option value="">Select ZIP</option>
+          <option>77014</option>
+          <option>77038</option>
+          <option>77060</option>
+          <option>77066</option>
+          <option>77067</option>
+          <option>77068</option>
+          <option>77069</option>
+          <option>77086</option>
+          <option>77267</option>
+          <option>77379</option>
+          <option value="other">Other...</option>
+        </select>
+        <input id="f-zip-other" type="text" placeholder="Enter ZIP code" inputmode="numeric" maxlength="5" autocomplete="off" style="display:none;margin-top:6px;width:100%;background:#2c2c2e;border:1px solid #E20074;border-radius:10px;padding:11px 13px;font-size:16px;font-family:inherit;color:#f5f5f7;outline:none">
+      </div>
+      <div><label>Status</label>
+        <select id="f-status"><option value="new">New</option><option value="follow">Follow-up</option><option value="hot">Hot</option><option value="closed">Closed</option><option value="dead">Not interested</option></select>
+      </div>
+    </div>
+    <label>Business type</label>
+    <select id="f-type"><option value="">Select type</option><option>Warehouse/Logistics</option><option>Medical/Dental</option><option>Retail/Restaurant</option><option>Professional Services</option><option>Auto/Repair</option><option>Home Services</option><option>Light Industrial</option><option>Tech Startup</option><option>Manufacturing</option><option>Education</option><option>Nonprofit</option><option>Construction</option><option>Fitness</option><option>Fuel/Convenience</option><option>Insurance</option><option>Accounting</option><option>Veterinary</option><option>Beauty/Salon</option><option>Other</option></select>
+    <div class="r2">
+      <div><label>Monthly wireless bill ($)</label><input id="f-bill" type="number" placeholder="0" inputmode="decimal"></div>
+      <div><label>Monthly internet bill ($)</label><input id="f-isp-bill" type="number" placeholder="0" inputmode="decimal"></div>
+    </div>
+    <div class="r2">
+      <div><label>Lines on account</label><input id="f-linecount" type="number" placeholder="e.g. 5" inputmode="numeric"></div>
+      <div><label>Follow-up date</label><input id="f-date" type="date"></div>
+    </div>
+    <label>Notes / pain points</label>
+    <textarea id="f-notes" placeholder="What did they say? Objections? Decision maker?"></textarea>
+    <div style="margin-top:13px"><button class="btn btn-pink" id="btn-save-contact">Save contact</button></div>
+  </div>
+  <div class="sep"></div>
+  <div class="filter-row" id="filter-row">
+    <button class="fp on" data-f="all">All</button>
+    <button class="fp" data-f="new">New</button>
+    <button class="fp" data-f="follow">Follow-up</button>
+    <button class="fp" data-f="hot">Hot</button>
+    <button class="fp" data-f="closed">Closed</button>
+  </div>
+  <div id="contact-list"><div class="empty">No contacts yet.<br>Add your first one above.</div></div>
+</div>
+
+<!-- ── CALCULATOR ──────────────────────── -->
+<div class="screen" id="s-calc">
+  <div class="card">
+    <div class="card-title">Their current bill</div>
+    <label>Current provider</label>
+    <select id="c-provider">
+      <optgroup label="Cable / Fiber Internet">
+        <option value="comcast">Comcast / Xfinity Business</option>
+        <option value="spectrum">Spectrum Business</option>
+        <option value="cox">Cox Business</option>
+        <option value="optimum">Optimum Business</option>
+        <option value="frontier">Frontier Business</option>
+        <option value="centurylink">CenturyLink / Lumen</option>
+      </optgroup>
+      <optgroup label="Phone Carriers (Wireless)">
+        <option value="att">AT&amp;T Business</option>
+        <option value="attdsl">AT&amp;T DSL / IPBB</option>
+        <option value="verizon">Verizon Business</option>
+        <option value="verizonwireless">Verizon Wireless</option>
+        <option value="metro">MetroPCS</option>
+        <option value="boost">Boost Mobile</option>
+        <option value="cricket">Cricket Wireless</option>
+        <option value="straighttalk">Straight Talk</option>
+        <option value="visible">Visible</option>
+      </optgroup>
+      <optgroup label="Other">
+        <option value="starlink">Starlink</option>
+        <option value="other">Other provider</option>
+      </optgroup>
+    </select>
+    <label>Monthly internet cost ($)</label>
+    <input id="c-internet" type="number" inputmode="decimal" value="150">
+    <label>Number of phone lines</label>
+    <input id="c-lines" type="number" inputmode="numeric" value="3" min="0">
+    <label>Monthly wireless cost per line ($)</label>
+    <input id="c-wireless" type="number" inputmode="decimal" value="55">
+    <label>Contract ETF ($, if any)</label>
+    <input id="c-etf" type="number" inputmode="decimal" value="0">
+  </div>
+  <div class="card">
+    <div class="card-title">T-Mobile pricing</div>
+    <label>Business Internet plan</label>
+    <select id="t-internet">
+      <option value="45">BI w/Voice BYOD promo — $45/mo</option>
+      <option value="55">BI w/Voice Router/GW promo — $55/mo</option>
+      <option value="60">BI Unlimited BYOD — $60/mo</option>
+      <option value="70" selected>BI Unlimited w/Gateway — $70/mo</option>
+      <option value="90">BI Unlimited w/Gateway + Install — $90/mo</option>
+    </select>
+    <label>Wireless plan per line</label>
+    <select id="t-wireless">
+      <option value="25">CoreMobile — $25/line</option>
+      <option value="35">Go5G Business — $35/line</option>
+      <option value="40" selected>ProMobile — $40/line</option>
+      <option value="45">Go5G+ Business — $45/line</option>
+      <option value="50">SuperMobile — $50/line</option>
+      <option value="55">Go5G Next — $55/line</option>
+    </select>
+  </div>
+  <div id="calc-results"></div>
+  <button class="btn btn-pink" id="btn-copy-calc" style="margin-bottom:10px">📤 Share / Copy Summary</button>
+  <div id="copied-msg" style="text-align:center;font-size:13px;color:#0d5c2a;display:none;margin-bottom:8px;font-weight:600;animation:fadeIn 0.3s">✓ Copied to clipboard!</div>
+</div>
+
+<!-- ── SCRIPTS ─────────────────────────── -->
+<div class="screen" id="s-scripts">
+  <div class="sp-row" id="sp-row">
+    <!-- Original 6 -->
+    <button class="sp on" data-v="logistics">Warehouse</button>
+    <button class="sp" data-v="medical">Medical</button>
+    <button class="sp" data-v="restaurant">Restaurant</button>
+    <button class="sp" data-v="proserv">Pro Services</button>
+    <button class="sp" data-v="auto">Auto/Repair</button>
+    <button class="sp" data-v="homeserv">Home Services</button>
+    <!-- Phase 2: New 13 verticals -->
+    <button class="sp" data-v="tech">Tech Startup</button>
+    <button class="sp" data-v="mfg">Manufacturing</button>
+    <button class="sp" data-v="education">Education</button>
+    <button class="sp" data-v="retail">Retail Chain</button>
+    <button class="sp" data-v="nonprofit">Nonprofit</button>
+    <button class="sp" data-v="construction">Construction</button>
+    <button class="sp" data-v="fitness">Fitness</button>
+    <button class="sp" data-v="fuel">Fuel/Convenience</button>
+    <button class="sp" data-v="insurance">Insurance</button>
+    <button class="sp" data-v="accounting">Accounting</button>
+    <button class="sp" data-v="vet">Veterinary</button>
+    <button class="sp" data-v="beauty">Beauty/Salon</button>
+    <button class="sp" data-v="logistics-adv">Logistics Hub</button>
+  </div>
+
+  <!-- ORIGINAL 6 SCRIPTS PRESERVED BELOW -->
+
+  <div id="vs-logistics" class="vscript on">
+    <div class="step-row" data-vs="logistics">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">Objection</button><button class="stp" data-i="3">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hi, I'm [you] with T-Mobile Business. I work with warehouses and logistics companies in the area — do you have 3 minutes? I want to show you what we're doing for operations like yours."</div><div class="tip">Best time: 8–10am or 2–4pm. Ask for the operations manager or owner.</div></div>
+    <div class="script-step"><div class="step-label">Discovery</div><div class="speech">"How many devices are running on your network daily — scanners, tablets, POS, cameras? And when your internet goes down, what happens to your floor operations?"<br><br><b>[Let them talk.]</b><br><br>"What are you currently paying for internet?"</div></div>
+    <div class="script-step"><div class="step-label">Handling objections</div><div class="speech"><b>Already have Comcast/AT&T:</b> "That's who most of my customers switched from. Can I show you the comparison? Most save $40–80/month."<br><br><b>Locked in a contract:</b> "When does it end? A lot of my customers use us as a backup line during the overlap — keeps you protected."<br><br><b>Need IT approval:</b> "Totally — what's the best way to get 15 minutes with them?"</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"Here's what I'd suggest — let's set you up as a backup line right now. You keep your current provider, and if the cable goes out, you automatically stay online. No contract, 30-day guarantee. Sound fair?"</div><div class="tip">Lead with downtime = lost money. Frame BizInt as insurance first, replacement second.</div></div>
+  </div>
+
+  <div id="vs-medical" class="vscript">
+    <div class="step-row" data-vs="medical">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">HIPAA Q</button><button class="stp" data-i="3">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hi, I'm [you] with T-Mobile Business. I work with medical and dental practices in the area. Do you have 3 minutes for the office manager? I have something specifically for healthcare offices."</div></div>
+    <div class="script-step"><div class="step-label">Discovery</div><div class="speech">"What happens to your practice if the internet goes down? EMR, payment processing, scheduling — all stops, right? How often does that happen?"<br><br><b>[Let them answer.]</b><br><br>"What are you paying for internet right now?"</div></div>
+    <div class="script-step"><div class="step-label">HIPAA concern</div><div class="speech">"Great question — T-Mobile Business Internet is standard broadband, same as any cable or fiber. HIPAA compliance happens at the application layer — your EMR vendor and IT team handle that, not the ISP. Most practices had IT approve it in one quick call."</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"Let's start as a backup line. Your current provider stays primary. If their line drops, you stay online — no lost revenue, no panicked staff. About $50–70/month, no contract, installs in 15 minutes."</div><div class="tip">Best add-on: ask how many staff use personal phones for work — pitch multi-line business wireless for a bigger deal.</div></div>
+  </div>
+
+  <div id="vs-restaurant" class="vscript">
+    <div class="step-row" data-vs="restaurant">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">Objection</button><button class="stp" data-i="3">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hey, how's it going — I'm [you] with T-Mobile Business. I work with restaurants and shops all along FM 1960. Do you have 3 minutes? I want to show you what's saving most of the businesses around here on their internet."</div><div class="tip">Best time to visit: 2–4pm. Avoid lunch rush (11:30am–1:30pm).</div></div>
+    <div class="script-step"><div class="step-label">Discovery</div><div class="speech">"When your internet goes down, what happens to your card readers?"<br><br><b>[They say they stop.]</b><br><br>"Exactly. Every table you can't run a card on is money out the door. How often does that happen? And what are you paying right now?"</div></div>
+    <div class="script-step"><div class="step-label">Objection</div><div class="speech">"Totally understand. Let me ask — what would need to be true for you to feel comfortable moving forward? Because I'd hate for you to have another outage next week when I could've had this solved for less than you're paying now."</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"T-Mobile Business Internet runs on 5G — not a cable line every business on the block shares. About $50–70/month, no contract, installs today in 15 minutes. 30-day guarantee — if it doesn't work, send it back."</div><div class="tip">BizInt includes guest WiFi — great for shops that want customer WiFi without sharing their main network.</div></div>
+  </div>
+
+  <div id="vs-proserv" class="vscript">
+    <div class="step-row" data-vs="proserv">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">Wireless</button><button class="stp" data-i="3">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hi, I'm [you] with T-Mobile Business. I work with professional offices in this area — law firms, financial advisors, insurance agencies. Do you have a couple minutes?"</div></div>
+    <div class="script-step"><div class="step-label">Discovery</div><div class="speech">"What internet are you on right now, and are you happy with it? What are you paying per month? Has it ever gone down during a client meeting?"<br><br><b>[Let them talk.]</b><br><br>"That's common with cable — especially in office buildings where you're sharing bandwidth."</div></div>
+    <div class="script-step"><div class="step-label">Wireless bundle pitch</div><div class="speech">"How many people in your office — on personal or business lines? We have a plan that bundles with the internet. A lot of firms went from $300+/month down under $200 for the whole team — lines and internet combined."</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"Pull up your last Comcast or AT&T bill and let's do this right now — side by side, apples to apples. If T-Mobile doesn't come out ahead, I won't waste another minute of your time. Fair?"</div><div class="tip">Spring/Klein and Champions buyers are analytical. Always do the bill math in the room — use the Calculator tab first.</div></div>
+  </div>
+
+  <div id="vs-auto" class="vscript">
+    <div class="step-row" data-vs="auto">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hey, how you doing — I'm [you] with T-Mobile Business. I work with auto shops in the area. You got two minutes? Want to show you something real quick."</div></div>
+    <div class="script-step"><div class="step-label">Discovery</div><div class="speech">"Are you running your parts lookup, labor systems, or card terminals off internet here? What provider are you on?"<br><br><b>[Listen.]</b><br><br>"What are you paying? Because I'm putting most of the shops around here on T-Mobile for about half that."</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"Try it for 30 days. If you don't like it, send it back — no contract, no cancellation fee. I can set you up right now in about 15 minutes. What do you say?"</div><div class="tip">Auto owners are direct — keep it short, lead with price and simplicity. The 30-day guarantee closes most of them.</div></div>
+  </div>
+
+  <div id="vs-homeserv" class="vscript">
+    <div class="step-row" data-vs="homeserv">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hi, I'm [you] with T-Mobile Business. I work with contractors in North Houston — HVAC, plumbing, electricians. Quick question — how do your techs communicate with the office when they're in the field?"</div></div>
+    <div class="script-step"><div class="step-label">Discovery + wireless pivot</div><div class="speech">"Are they using personal phones or company lines? What carrier?"<br><br><b>[Listen.]</b><br><br>"We have a business plan for field crews — unlimited data with hotspot so your techs can pull up job orders or run payments on-site. Bundle with office internet and most contractors save $80–120/month total."</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"How many techs do you have running right now? Let me show you what a 3–4 line plan looks like versus what you're paying. Takes 3 minutes — if the numbers don't make sense, no hard feelings."</div><div class="tip">77038, 77014, 77086 are huge untapped verticals. Lead with wireless for field techs — BizInt is the bundle add, not the opener.</div></div>
+  </div>
+
+  <!-- NEW VERTICALS - PHASE 2 -->
+
+  <div id="vs-tech" class="vscript">
+    <div class="step-row" data-vs="tech">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">Security</button><button class="stp" data-i="3">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hi, I'm [you] with T-Mobile Business. I work with tech startups and remote-first companies. How many team members are working remote or split between office and home right now?"</div><div class="tip">Tech founders are fast movers — lead with numbers and data. They value uptime and reliability above price.</div></div>
+    <div class="script-step"><div class="step-label">Discovery</div><div class="speech">"Are they on personal phones, company lines, or a mix? What's your total mobile and internet spend per month?"<br><br><b>[Listen.]</b><br><br>"What's your biggest concern if your primary internet went down during a critical launch or client call?"</div></div>
+    <div class="script-step"><div class="step-label">Security &amp; Compliance</div><div class="speech">"We handle HIPAA and SOC-2 compliance with standard ISP broadband — your security team handles encryption and zero-trust architecture. What we provide is bulletproof uptime. That's what companies like [Notion/figma-type competitor] rely on."</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"Here's what I'd suggest: business wireless for distributed teams + BizInt as your failover. Costs less than Verizon, better coverage indoors, and your team stays connected globally. 30-day trial, no contract. Let's run the numbers."</div><div class="tip">Tech buyers appreciate: uptime SLAs, global coverage maps, and real-time dashboards. Mention 5G speed and simultaneous Zoom capacity.</div></div>
+  </div>
+
+  <div id="vs-mfg" class="vscript">
+    <div class="step-row" data-vs="mfg">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">IoT</button><button class="stp" data-i="3">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hi, I'm [you] with T-Mobile Business. I work with manufacturers and production facilities. When your plant's connectivity goes down, what's the real cost in lost production?"</div><div class="tip">Manufacturers measure in downtime costs per minute. Lead with failure = revenue loss.</div></div>
+    <div class="script-step"><div class="step-label">Discovery</div><div class="speech">"What systems are on your network? MES, PLC controls, predictive maintenance sensors?"<br><br><b>[Listen to tech stack.]</b><br><br>"What are you paying for internet now, and what's your backup plan when it fails?"</div></div>
+    <div class="script-step"><div class="step-label">IoT &amp; Sensors</div><div class="speech">"T-Mobile Business Internet is native 5G — built for IoT and predictive maintenance. We support edge computing, low-latency controls, and industrial-grade uptime. Plus, we offer cellular-only failover for the entire facility if cable drops."</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"One backup line at $70/month saves you from $10,000+ downtime events. Plus, we can add cellular devices for predictive maintenance on equipment. Let's calculate your actual cost of downtime."</div><div class="tip">Engage plant managers + IT. Show case studies of similar manufacturers. Highlight: zero-touch failover, built-in SIM support for machinery.</div></div>
+  </div>
+
+  <div id="vs-education" class="vscript">
+    <div class="step-row" data-vs="education">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">Students</button><button class="stp" data-i="3">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hi, I'm [you] with T-Mobile Business. I work with K-12 schools and colleges managing student technology. How many devices are you supporting — both school-owned and BYOD?"</div><div class="tip">Decision-maker is IT director or Chief Technology Officer. Focus on student uptime and classroom disruption prevention.</div></div>
+    <div class="script-step"><div class="step-label">Discovery</div><div class="speech">"What's your current internet provider? When it goes down, do classes just stop, or do you have a backup?"<br><br><b>[Listen.]</b><br><br>"How much are you spending monthly on connectivity? Are you getting grants to cover tech spend?"</div></div>
+    <div class="script-step"><div class="step-label">Student Devices &amp; WiFi</div><div class="speech">"We have a student pricing tier — mobile lines for school-owned tablets or Chromebooks. Plus BizInt as primary + cellular failover for critical classroom needs. Grants often cover education technology — we can help you structure the deal."</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"Zero class interruptions = happier teachers + better test scores. Let's set up BizInt as primary and add 20-50 subsidized student lines. Most schools see ROI immediately from reduced downtime."</div><div class="tip">Mention: Title I grant eligibility, E-rate discounts, student mental health (connectivity =  participation). Offer bulk education pricing.</div></div>
+  </div>
+
+  <div id="vs-retail" class="vscript">
+    <div class="step-row" data-vs="retail">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">Multi-Location</button><button class="stp" data-i="3">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hi, I'm [you] with T-Mobile Business. I work with retail chains managing multiple locations. How many stores are you operating right now, and what's your biggest headache with POS or inventory systems?"</div><div class="tip">Speak to the corporate IT or operations manager, not individual store managers.</div></div>
+    <div class="script-step"><div class="step-label">Discovery</div><div class="speech">"When a single store loses internet, can your main office push inventory updates or process payments? How long does recovery typically take?"<br><br><b>[Listen.]</b><br><br>"What are you paying for connectivity across all locations?"</div></div>
+    <div class="script-step"><div class="step-label">Multi-Location Bundle</div><div class="speech">"We can provision BizInt at each location with a master control dashboard — managed from your head office. If one store's cable goes down, it auto-fails over to cellular. Unified billing, one invoice per month."</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"Most chains save 20-30% by consolidating. Plus, we handle the provisioning and support. No more chasing 15 different ISP reps. One T-Mobile account, one bill, 24/7 support. Sound good?"</div><div class="tip">Pitch: centralized management, volume discounts, white-glove provisioning for multi-location deploy.</div></div>
+  </div>
+
+  <div id="vs-nonprofit" class="vscript">
+    <div class="step-row" data-vs="nonprofit">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">Grants</button><button class="stp" data-i="3">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hi, I'm [you] with T-Mobile Business. I work with nonprofits stretching every dollar. What's your current internet setup, and how many staff and volunteers are online daily?"</div><div class="tip">Lead with fiscal responsibility and mission impact, not price. Nonprofits care about = uptime for serving clients.</div></div>
+    <div class="script-step"><div class="step-label">Discovery</div><div class="speech">"Are you using grants for tech spend, or coming out of operational budget? What happens if your systems go down during a fundraiser or event?"<br><br><b>[Listen.]</b><br><br>"What are you paying monthly?"</div></div>
+    <div class="script-step"><div class="step-label">Grant Eligibility &amp; Pricing</div><div class="speech">"Many nonprofits qualify for telecom discounts through FCC e-rate and state tech grants. We can help you structure the deal and file the application. Plus, our nonprofit pricing is 15-25% below commercial."</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"Let's help you save on connectivity so you can invest more in your mission. We'll handle the grant paperwork. No contract, and if it doesn't work, you can walk away guilt-free."</div><div class="tip">Partner with nonprofit tech consultants. Offer pro-bono setup for qualifying orgs. Mention: cost of downtime during donation drives/events.</div></div>
+  </div>
+
+  <div id="vs-construction" class="vscript">
+    <div class="step-row" data-vs="construction">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">Field Crews</button><button class="stp" data-i="3">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hi, I'm [you] with T-Mobile Business. I work with general contractors and subs. When you're on a job site with no reliable internet, how do your crews pull up specs or time-and-materials reports?"</div><div class="tip">Construction is fast-moving, hands-on. Speak to the superintendent or project manager on-site if possible.</div></div>
+    <div class="script-step"><div class="step-label">Discovery</div><div class="speech">"Are crews relying on personal phones or hotspots? What happens when you need to verify changes or submit daily reports?"<br><br><b>[Listen.]</b><br><br>"What's your current spend on connectivity for the field?"</div></div>
+    <div class="script-step"><div class="step-label">Field Crew Connectivity</div><div class="speech">"T-Mobile 5G covers job sites most cable companies never reach. We offer rugged hotspots and fleet data plans so your crews always have access to plans, photos, and billing. No contracts — month-to-month."</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"Add 5-10 crew lines today. Each supinte costs $8/month. Within the first month, you'll save time that costs 10x more than the line fee. Let's get rolling."</div><div class="tip">Highlight: 5G coverage maps, Dropbox/Box integration for shared specs, photo uploads for warranty documentation. Offer pilot on one job first.</div></div>
+  </div>
+
+  <div id="vs-fitness" class="vscript">
+    <div class="step-row" data-vs="fitness">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">Members</button><button class="stp" data-i="3">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hi, I'm [you] with T-Mobile Business. I work with boutique studios and gyms. What's your biggest frustration with check-in systems, class scheduling, and member WiFi?"</div><div class="tip">Fitness studio owners care about member experience and operational simplicity. Lead with data that drives member retention.</div></div>
+    <div class="script-step"><div class="step-label">Discovery</div><div class="speech">"When your internet goes down, do members see broken check-in or slow WiFi? How often does that happen?"<br><br><b>[Listen.]</b><br><br>"What are you paying for internet and guest WiFi today?"</div></div>
+    <div class="script-step"><div class="step-label">Member Experience</div><div class="speech">"Reliable WiFi keeps members happy and engaged. Plus, business data lines for staff. We give you guest WiFi segmented from your internal systems — members get fast speeds, you stay secure. Less churn, more referrals."</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"$70/month backup internet + guest WiFi upgrade. Most studios save money AND improve NPS scores. 30-day trial — if members don't notice better connectivity, send it back."</div><div class="tip">Highlight: member app reliability, Instagram upload speeds during class clips, locker room WiFi (retention driver). Show case studies of similar studios.</div></div>
+  </div>
+
+  <div id="vs-fuel" class="vscript">
+    <div class="step-row" data-vs="fuel">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">Payment Critical</button><button class="stp" data-i="3">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hi, I'm [you] with T-Mobile Business. I work with fuel and convenience stores. Internet downtime at a gas pump is basically lost revenue. How often does that happen to you?"</div><div class="tip">Gas station managers are laser-focused on revenue. Lead with: every outage = $X lost per minute.</div></div>
+    <div class="script-step"><div class="step-label">Discovery</div><div class="speech">"When payments go down, how many pumps are offline? Can customers use cash/gift cards as a workaround, or is it a hard stop?"<br><br><b>[Listen.]</b><br><br>"What's your total monthly bill?"</div></div>
+    <div class="script-step"><div class="step-label">Payment System Reliability</div><div class="speech">"T-Mobile Business Internet is our most redundant offering. We manage convenience store chains across 10+ states with zero payment downtime. Backup cellular failover activates instantly if cable fails."</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"One backup line is insurance. A 2-minute outage on a busy Friday costs you $200+. For $70/month, that math is a no-brainer. Let's get you set up this week."</div><div class="tip">Speak to the owner or franchisee. Show: payment processor redundancy, pump uptime guarantees, real-time monitoring dashboard. Mention: API integration with popular POS systems.</div></div>
+  </div>
+
+  <div id="vs-insurance" class="vscript">
+    <div class="step-row" data-vs="insurance">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">Compliance</button><button class="stp" data-i="3">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hi, I'm [you] with T-Mobile Business. I work with insurance agencies. How many agents do you have, and are they all in-office or split across remote locations?"</div><div class="tip">Insurance is heavily regulated. Emphasize: compliance, security, and professionalism in every conversation.</div></div>
+    <div class="script-step"><div class="step-label">Discovery</div><div class="speech">"What's your biggest pain point with client communication and policy management? Are agents handling things via personal phones?"<br><br><b>[Listen.]</b><br><br>"What are you spending on phone and internet monthly?"</div></div>
+    <div class="script-step"><div class="step-label">Compliance &amp; Security</div><div class="speech">"Insurance data requires end-to-end encryption and audit trails. T-Mobile Business is fully compliant with state insurance boards + GLBA standards. Your ISP handles broadband; we handle the secure pipe. All managed and monitored 24/7."</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"Consolidate all agency lines with T-Mobile. Agents get professional wireless, office gets redundant internet. Better compliance posture, lower total cost. Let's run the numbers on your current carriers."</div><div class="tip">Position as: compliance partner, not just ISP. Mention: annual audit readiness, encrypted email support, secure client portal hosting.</div></div>
+  </div>
+
+  <div id="vs-accounting" class="vscript">
+    <div class="step-row" data-vs="accounting">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">Data Security</button><button class="stp" data-i="3">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hi, I'm [you] with T-Mobile Business. I work with accounting and bookkeeping firms. Tax season = critical uptime. What's your current infrastructure look like?"</div><div class="tip">CPAs and bookkeepers are highly regulated and detail-oriented. Show you understand: SOX, HIPAA-adjacent standards, client confidentiality.</div></div>
+    <div class="script-step"><div class="step-label">Discovery</div><div class="speech">"How many partners and staff work from the office vs. remote? When tax season hits and you have a million deadline minutes, what's your backup if internet fails?"<br><br><b>[Listen.]</b><br><br>"What are you paying?"</div></div>
+    <div class="script-step"><div class="step-label">Data Security &amp; Uptime</div><div class="speech">"T-Mobile Business Internet is SOX-compliant and built for data-heavy workloads. We manage accounting firms' critical tax-season infrastructure with 99.99% uptime SLAs. Encrypted VPN, zero-logging, audit-ready."</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"This year, don't risk tax deadline disasters. Backup internet + all staff on T-Mobile wireless. One master invoice, one support number. Most firms save 20-30% vs. separate carriers. Ready to lock this in?"</div><div class="tip">Mention: SOC-2 Type II certification, annual compliance reporting, QuickBooks/Intuit integration support. Offer tax-season hotline escalation.</div></div>
+  </div>
+
+  <div id="vs-vet" class="vscript">
+    <div class="step-row" data-vs="vet">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">Emergency Care</button><button class="stp" data-i="3">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hi, I'm [you] with T-Mobile Business. I work with vet clinics and animal hospitals. Internet downtime in an emergency = animals at risk. How are you handling that today?"</div><div class="tip">Vets are passionate about animals and patient care. Lead with: animal safety, not IT.</div></div>
+    <div class="script-step"><div class="step-label">Discovery</div><div class="speech">"If your EMR or pharmacy system goes offline during surgery, what's the protocol? How often has that happened?"<br><br><b>[Listen to trauma responses.]</b><br><br>"What are you paying for internet?"</div></div>
+    <div class="script-step"><div class="step-label">Emergency Care Reliability</div><div class="speech">"T-Mobile Business Internet is what emergency vet hospitals trust. Instant cellular failover so your surgical teams never lose access to imaging, records, or meds. 24/7 support — we have an on-call vet clinic team."</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"$70/month peace of mind. During emergencies, your internet is rock-solid. That's what matters. Plus, we can add staff mobile lines so vets stay in touch during house calls."</div><div class="tip">Reference: emergency animal hospitals, 24-hour urgent care chains. Mention: AVMA compliance, imaging system redundancy, pharmacy integration support.</div></div>
+  </div>
+
+  <div id="vs-beauty" class="vscript">
+    <div class="step-row" data-vs="beauty">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">Booking + Guest</button><button class="stp" data-i="3">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hi, I'm [you] with T-Mobile Business. I work with salons, nail studios, and spas. When your booking system goes down, you're stuck writing appointments on paper. Sound familiar?"</div><div class="tip">Beauty salon owners are entrepreneurs. Lead with: client experience and operational efficiency.</div></div>
+    <div class="script-step"><div class="step-label">Discovery</div><div class="speech">"How many stylists are you running? What's your busiest day look like? When internet fails, how many clients cancel vs. rebook?"<br><br><b>[Listen.]</b><br><br>"What's your current spend?"</div></div>
+    <div class="script-step"><div class="step-label">Booking + Guest WiFi</div><div class="speech">"Reliable booking system = more revenue + happier stylists. Plus, free guest WiFi so clients are entertained while waiting. Separate network, so your internal payment systems stay secure."</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"$70/month backup internet + guest WiFi upgrade. Most studios see 10-15% increase in rebooking rates just from better WiFi experience. 30-day guarantee."</div><div class="tip">Highlight: Instagram upload speeds (stylists love sharing work), Zoom integration for consultations, Square/Toast payment reliability. Show social proof from other salons.</div></div>
+  </div>
+
+  <div id="vs-logistics-adv" class="vscript">
+    <div class="step-row" data-vs="logistics-adv">
+      <button class="stp on" data-i="0">Open</button><button class="stp" data-i="1">Discovery</button><button class="stp" data-i="2">Fleet + IoT</button><button class="stp" data-i="3">Close</button>
+    </div>
+    <div class="script-step on"><div class="step-label">Opening</div><div class="speech">"Hi, I'm [you] with T-Mobile Business. I work with major logistics hubs and 3PLs. Fleet tracking, inventory optimization, real-time dispatch — all mission-critical. What's your current setup?"</div><div class="tip">Large logistics ops are data-hungry. Lead with: IoT integration, real-time visibility, cost per ton metrics.</div></div>
+    <div class="script-step"><div class="step-label">Discovery</div><div class="speech">"How many active vehicles, IoT sensors, and RFID readers do you have? What's your current connectivity cost across all these?"<br><br><b>[Listen to tech details.]</b><br><br>"When a data feed drops, what's the cascading impact on your operations?"</div></div>
+    <div class="script-step"><div class="step-label">Fleet + IoT Infrastructure</div><div class="speech">"T-Mobile dedicated IoT infrastructure. We power vehicle trackers, temperature sensors, and pallet monitors for logistics giants. Lowest latency in the industry, built-in redundancy, API-first architecture."</div></div>
+    <div class="script-step"><div class="step-label">Close</div><div class="speech">"Let's migrate your fleet and IoT to T-Mobile. You'll cut connectivity costs by 25-40%, improve visibility, and add real-time alerts. We'll manage the transition — zero downtime. When can we run a POC on one hub?"</div><div class="tip">Pitch: Connected logistics platform, machine learning for route optimization, white-label real-time tracking API. Offer dedicated account team for large ops.</div></div>
+  </div>
+
+</div>
+
+<!-- ── DEAL HEALTH ─────────────────────── -->
+<div class="screen" id="s-deal">
+  <div class="sub-tabs" id="sub-tabs">
+    <button class="stab on" data-p="dh-info">Deal Info</button>
+    <button class="stab" data-p="dh-products">Products</button>
+    <button class="stab" data-p="dh-health">Health</button>
+    <button class="stab" data-p="dh-strategy">Strategy</button>
+  </div>
+
+  <!-- Deal Info panel -->
+  <div id="dh-info" class="dpanel on">
+    <div class="card">
+      <div class="card-title">Business details</div>
+      <label>Business name</label><input id="d-biz" placeholder="Business name" autocorrect="off">
+      <label>Request # / BAN</label><input id="d-ban" placeholder="BAN number" inputmode="numeric">
+      <div class="r2">
+        <div><label>SFDC Acct ID</label><input id="d-sfdc1" placeholder="001..." maxlength="18" autocorrect="off"></div>
+        <div><label>SFDC Oppt ID</label><input id="d-sfdc2" placeholder="006..." maxlength="18" autocorrect="off"></div>
+      </div>
+      <div class="r2">
+        <div><label>Expected close</label><input type="date" id="d-close"></div>
+        <div><label>Account type</label>
+        <select id="d-accttype">
+          <option value="ssn">Sole Prop — SSN</option>
+          <option value="taxid">Business — Tax ID / EIN</option>
+        </select>
+      </div>
+      <div><label>Customer type</label><select id="d-custtype"><option value="new_logo">New Logo</option><option value="existing">Existing Customer</option><option value="winback">Winback</option></select></div>
+      </div>
+      <div class="r2">
+        <div><label>Partner sale?</label><select id="d-partner"><option>No</option><option>Yes</option></select></div>
+        <div><label>Competitor MRC ($)</label><input type="number" id="d-compmrc" placeholder="0" inputmode="decimal"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Deal context</div>
+      <label>Reason PIC can't cover ETFs?</label>
+      <select id="d-pic"><option>No ports for this customer</option><option>COR coming in with voice lines</option><option>No ETF — not applicable</option><option>3rd party buyback involved</option></select>
+      <label>3rd party buy-back vendor?</label>
+      <select id="d-3p"><option>No 3rd party involved</option><option>Yes — vendor involved</option></select>
+      <label>Can deal go lower-tier vs credits?</label>
+      <select id="d-lower"><option>Cannot be structured to lower tier</option><option>Yes — lower tier option possible</option></select>
+      <label>Additional deal details</label>
+      <textarea id="d-notes" rows="2" placeholder="Customer situation, context, objections..."></textarea>
+    </div>
+    <div class="card">
+      <div class="card-title">Products NOT eligible</div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px">
+        <label style="display:flex;align-items:center;gap:7px;margin:0;font-size:14px"><input type="checkbox" style="width:auto;height:auto" value="MSFT Office"> MSFT Office</label>
+        <label style="display:flex;align-items:center;gap:7px;margin:0;font-size:14px"><input type="checkbox" style="width:auto;height:auto" value="Direct Connect"> Direct Connect</label>
+        <label style="display:flex;align-items:center;gap:7px;margin:0;font-size:14px"><input type="checkbox" style="width:auto;height:auto" value="Multiline"> Multiline</label>
+        <label style="display:flex;align-items:center;gap:7px;margin:0;font-size:14px"><input type="checkbox" style="width:auto;height:auto" value="CSP"> CSP</label>
+        <label style="display:flex;align-items:center;gap:7px;margin:0;font-size:14px"><input type="checkbox" style="width:auto;height:auto" value="Perfect 10"> Perfect 10 Opps</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Products panel -->
+  <div id="dh-products" class="dpanel">
+    <!-- PHASE 1: Real-time Health Snapshot -->
+    <div id="d-health-snapshot" style="display:none">
+      <div class="snap-title">📊 Live Deal Health</div>
+      <div class="snap-grid">
+        <div class="snap-cell"><div class="snap-label">MRC</div><div class="snap-value" id="snap-mrc">$0</div></div>
+        <div class="snap-cell"><div class="snap-label">Lines</div><div class="snap-value" id="snap-lines">0</div></div>
+        <div class="snap-cell"><div class="snap-label">ARPU</div><div class="snap-value" id="snap-arpu">$0</div></div>
+        <div class="snap-cell"><div class="snap-label">Breakeven</div><div class="snap-value" id="snap-breakeven">-</div></div>
+      </div>
+      <div class="health-bar-container">
+        <div class="health-bar"><div class="health-bar-fill" id="snap-bar" style="width:0%;background:#3a3a3c"></div></div>
+        <div class="health-bar-text"><span>Health Score</span><span id="snap-score">0/100</span></div>
+      </div>
+      <div class="snap-status"><span class="snap-status-badge snap-status-warn" id="snap-status">Pending</span></div>
+      <div id="snap-suggestions" style="display:none;margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Voice lines</div>
+      <div id="d-voice-blocks">
+        <div class="blk voice-blk">
+          <div class="r2">
+            <div><label>Rate plan</label>
+              <select class="vPlan">
+                <optgroup label="New Plans"><option value="25">CoreMobile | $25</option><option value="40" selected>ProMobile | $40</option><option value="50">SuperMobile | $50</option><option value="45">Experience More | $45</option><option value="55">Experience Beyond | $55</option></optgroup>
+                <optgroup label="Go5G"><option value="35">Go5G Business | $35</option><option value="45">Go5G+ Business | $45</option><option value="55">Go5G Next | $55</option></optgroup>
+                <optgroup label="Bus. Unlimited"><option value="25">Bus. Unl Select | $25</option><option value="30">Bus. Unl Advanced | $30</option><option value="40">Bus. Unl Ultimate | $40</option><option value="45">Bus. Unl Edge | $45</option><option value="50">Bus. Unl Ultimate+ | $50</option></optgroup>
+                <optgroup label="T-Priority"><option value="39.5">T-Priority Advanced | $39.50</option><option value="44.5">T-Priority Ultimate | $44.50</option></optgroup>
+                <optgroup label="Other"><option value="15">Simple Choice | $15</option><option value="0">Other Voice</option></optgroup>
+              </select>
+            </div>
+            <div><label>MRC/line ($)</label><input type="number" class="vMRC" value="40" inputmode="decimal"></div>
+          </div>
+          <div class="r3">
+            <div><label>Lines</label><input type="number" class="vLines" value="1" inputmode="numeric"></div>
+            <div><label>Device</label><select class="vDevice"><option>BYOD</option><option>New Device</option><option>CPO</option></select></div>
+            <div><label>Port?</label><select class="vPort"><option value="">No</option><option value="Y">Y</option><option value="N">N</option><option value="BF">BF</option></select></div>
+          </div>
+          <div class="r2">
+            <div><label>Promo</label><input class="vPromo" placeholder="No Promo Selected" autocorrect="off"></div>
+            <div><label>CC ($)</label><input type="number" class="vCC" value="0" inputmode="decimal"></div>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-gray" style="margin-top:6px;font-size:14px;padding:11px" id="btn-add-voice">+ Add voice group</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">HSI / Business Internet</div>
+      <div id="d-hsi-blocks"></div>
+      <button class="btn btn-gray" style="margin-top:6px;font-size:14px;padding:11px" id="btn-add-hsi">+ Add HSI line</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Tablets / MINT / Wearables</div>
+      <div id="d-tablet-blocks">
+        <div class="blk tablet-blk">
+          <div class="r2">
+            <div><label>Plan</label>
+              <select class="tPlan">
+                <optgroup label="Tablet"><option value="25">Tablet Unlimited | $25</option><option value="30">Tablet Unl Plus | $30</option><option value="15">Tablet Promo | $15</option><option value="15">Tablet 2GB | $15</option></optgroup>
+                <optgroup label="T-Priority Tablet"><option value="30">T-Priority 15GB | $30</option><option value="40">T-Priority Unl | $40</option></optgroup>
+                <optgroup label="MINT / Watch"><option value="15">Apple Watch Standalone | $15</option><option value="15">Android Watch Standalone | $15</option><option value="25">Linkport 15GB | $25</option><option value="12">SyncUp KIDS Watch | $12</option><option value="27">Data w/ DIGITS HS | $27</option></optgroup>
+              </select>
+            </div>
+            <div><label>MRC/line ($)</label><input type="number" class="tMRC" value="25" inputmode="decimal"></div>
+          </div>
+          <div class="r2">
+            <div><label>Lines</label><input type="number" class="tLines" value="1" inputmode="numeric"></div>
+            <div><label>Activation credit ($)</label><input type="number" class="tAC" value="0" inputmode="decimal"></div>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-gray" style="margin-top:6px;font-size:14px;padding:11px" id="btn-add-tablet">+ Add tablet / MINT</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Subsidy voice (enterprise)</div>
+      <div id="d-subsidy-blocks"></div>
+      <button class="btn btn-gray" style="margin-top:6px;font-size:14px;padding:11px" id="btn-add-subsidy">+ Add subsidy line</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Customer context</div>
+      <div class="r2">
+        <div><label>Customer comfortable paying ($/mo)</label><input type="number" id="d-custpay" placeholder="e.g. 250" inputmode="decimal"></div>
+        <div><label>Partner covering first bill?</label><select id="d-partner-bill"><option value="no">No</option><option value="yes">Yes — partner covers bill 1</option></select></div>
+      </div>
+      <div class="r2">
+        <div><label>Free line promo? (lines free)</label><input type="number" id="d-freelines" placeholder="0" value="0" min="0" inputmode="numeric"></div>
+        <div><label>Free line MRC value ($)</label><input type="number" id="d-freemrc" placeholder="e.g. 40" value="0" inputmode="decimal"></div>
+      </div>
+      <label>Package strategy</label>
+      <select id="d-pkgstrat">
+        <option value="6mo">6-month package — short term, high credits</option>
+        <option value="7mo" selected>7-month package — standard strategy</option>
+        <option value="12mo">12-month package — longer term stability</option>
+        <option value="24mo">24-month — full contract term</option>
+      </select>
+    </div>
+    <div class="card">
+      <div class="card-title">Credits &amp; approval</div>
+      <div class="r2">
+        <div><label>Frequency</label><select id="d-freq"><option>Quarterly</option><option>Monthly</option><option>One Time</option><option>Annual</option></select></div>
+        <div><label>Duration</label><select id="d-dur"><option value="6">6 months</option><option value="12">12 months</option><option value="18">18 months</option><option value="24" selected>24 months</option><option value="36">36 months</option></select></div>
+      </div>
+      <div class="r2">
+        <div><label>Credit type</label><select id="d-ctype"><option>Closing (Service)</option><option>Acquisition Service</option><option>Retention</option><option>Loyalty</option></select></div>
+        <div><label>Adj. reason</label><select id="d-areason"><option>Adjustment Reason</option><option>Price Match</option><option>Competitive Win</option><option>Retention</option></select></div>
+      </div>
+      <div class="r3">
+        <div><label>Sr Mgr ($)</label><input type="number" id="d-sm" value="1000" inputmode="decimal"></div>
+        <div><label>Director ($)</label><input type="number" id="d-dir" value="2000" inputmode="decimal"></div>
+        <div><label>VP/BM ($)</label><input type="number" id="d-vp" value="4999" inputmode="decimal"></div>
+      </div>
+    </div>
+    <button class="btn btn-purple" id="btn-calc-deal" style="margin-bottom:6px">Calculate deal health</button>
+    <!-- Deal Templates Feature - Phase 5 -->
+    <div class="card" style="margin-bottom:6px">
+      <div class="card-title">Deal Templates</div>
+      <div class="r2">
+        <div><button class="btn btn-gray" id="btn-save-template" style="font-size:14px;padding:11px">💾 Save as Template</button></div>
+        <div><select id="template-load" style="width:100%;font-size:14px;padding:11px;background:#2c2c2e;border:1px solid #3a3a3c;border-radius:10px;color:#f5f5f7;font-family:inherit"><option value="">Load saved template...</option></select></div>
+      </div>
+      <div id="template-msg" style="display:none;margin-top:8px;padding:10px;border-radius:8px;font-size:12px"></div>
+    </div>
+  </div>
+
+  <!-- Health panel -->
+  <div id="dh-health" class="dpanel">
+    <div id="d-health-out"><div class="empty">Complete Products tab and tap<br><b>Calculate deal health</b> to see results.</div></div>
+  </div>
+
+  <!-- Strategy panel -->
+  <div id="dh-strategy" class="dpanel">
+    <div class="card">
+      <div class="card-title">6–7 month package strategy</div>
+      <div class="r2">
+        <div><label>Contract start</label><input type="date" id="d-start"></div>
+        <div><label>Package length</label><select id="d-pkglen"><option value="6">6 months</option><option value="7" selected>7 months</option><option value="12">12 months</option></select></div>
+      </div>
+      <label>Customer priority</label>
+      <select id="d-pri"><option>Price sensitive — minimize MRC</option><option>Growth — adding lines soon</option><option>Stability — no churn risk</option><option>Competitive win</option><option>Bundle value — internet + mobile</option></select>
+      <label>Payment history</label>
+      <select id="d-pay"><option>Excellent — always on time</option><option>Good — occasional late</option><option>Fair — sometimes late</option><option>Poor — frequent late/missed</option></select>
+      <label>Churn risk</label>
+      <select id="d-churn"><option>Low — very satisfied</option><option>Medium — some complaints</option><option>High — threatening to leave</option><option>Critical — already shopping</option></select>
+      <label>Customer NPS</label>
+      <select id="d-nps"><option value="10">10 — Promoter</option><option value="9">9 — Promoter</option><option value="8">8 — Passive</option><option value="7">7 — Passive</option><option value="6">6 — Detractor</option><option value="5">5 or below — Detractor</option></select>
+      <label>Upsell opportunities</label>
+      <select id="d-upsell"><option>None identified</option><option>More voice lines</option><option>Add HSI / Business Internet</option><option>Add tablets / devices</option><option>Full bundle upgrade</option><option>IoT / fleet tracking</option></select>
+      <div style="margin-top:14px"><button class="btn btn-purple" id="btn-calc-strat">Build strategy plan</button></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Deal Growth Advisor</div>
+      <label>Current deal MRC ($)</label>
+      <input type="number" id="g-mrc" placeholder="e.g. 200" inputmode="decimal">
+      <label>Number of lines</label>
+      <input type="number" id="g-lines" placeholder="e.g. 4" inputmode="numeric">
+      <label>Goal</label>
+      <select id="g-goal">
+        <option value="arpu">Raise ARPU to $24 threshold</option>
+        <option value="hsi">Add Business Internet</option>
+        <option value="upgrade">Upgrade voice plan</option>
+        <option value="tablet">Add tablets / MINT</option>
+        <option value="lines">Add more lines</option>
+      </select>
+      <div style="margin-top:12px"><button class="btn btn-pink" id="btn-grow">Show growth options</button></div>
+      <div id="grow-out" style="margin-top:10px"></div>
+    </div>
+    <div id="d-strat-out"></div>
+  </div>
+</div>
+
+
+<!-- ── PROMOS ─────────────────────────────────── -->
+<div class="screen" id="s-promos">
+  <div style="background:#E20074;padding:calc(env(safe-area-inset-top)+12px) 16px 12px;position:sticky;top:0;z-index:100">
+    <h1 style="color:#fff;font-size:18px;font-weight:700">🎯 Promo Finder</h1>
+    <p style="color:rgba(255,255,255,.8);font-size:12px;margin-top:2px">Filter by account type to see what your customer qualifies for</p>
+  </div>
+  <div style="padding:10px 12px 4px;background:#2c2c2e;position:sticky;top:60px;z-index:99">
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button class="fp on" id="p-ssn" onclick="filterPromos('ssn')">SSN / Sole Prop</button>
+      <button class="fp" id="p-taxid" onclick="filterPromos('taxid')">Tax ID / EIN ⭐</button>
+      <button class="fp" id="p-all" onclick="filterPromos('all')">All</button>
+    </div>
+    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch;scrollbar-width:none" id="promo-cat-row">
+      <button class="fp on" data-c="all" onclick="filterPromoCat(this,'all')">All types</button>
+      <button class="fp" data-c="port" onclick="filterPromoCat(this,'port')">Port-In</button>
+      <button class="fp" data-c="service" onclick="filterPromoCat(this,'service')">Service</button>
+      <button class="fp" data-c="device" onclick="filterPromoCat(this,'device')">Devices</button>
+      <button class="fp" data-c="tablet" onclick="filterPromoCat(this,'tablet')">Tablet/MI</button>
+      <button class="fp" data-c="iot" onclick="filterPromoCat(this,'iot')">IoT</button>
+      <button class="fp" data-c="subsidy" onclick="filterPromoCat(this,'subsidy')">Subsidy</button>
+    </div>
+  </div>
+  <div style="background:#2a1f00;padding:10px 14px;margin:8px 12px;border-radius:10px;font-size:12px;color:#ffd60a;line-height:1.5">
+    [*] <b>Tax ID customers get more</b> — $100 tablet activation credit, Internet Contract Freedom via physical prepaid card (SSN = virtual card only), and full subsidy plans unavailable to SSN customers.
+  </div>
+  <div id="promo-list" style="padding:0 12px 8px"></div>
+</div>
+</div><!-- /app -->
+
+<!-- BOTTOM TAB BAR -->
+<div id="tab-bar">
+  <button class="tb on" data-s="crm">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    CRM
+  </button>
+  <button class="tb" data-s="calc">
+    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    Calculator
+  </button>
+  <button class="tb" data-s="scripts">
+    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Scripts
+  </button>
+  <button class="tb" data-s="deal">
+    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    Deal Health
+  </button>
+  <button class="tb" data-s="promos">
+    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    Promos
+  </button>
+</div>
+
+<div id="install-hint">
+  <button class="close-hint" onclick="document.getElementById('install-hint').style.display='none';localStorage.setItem('dhp_hint','1')">×</button>
+  <b>📲 Add to Home Screen</b>
+  Tap the Share button in Safari → "Add to Home Screen" to use Deal Health Pro as a full-screen app.
+</div>
+
+<!-- COMPREHENSIVE JAVASCRIPT - ALL PHASES IMPLEMENTED -->
+<script>
+// Show install hint on first visit if not already a standalone app
+(function(){
+  var isStandalone = window.navigator.standalone;
+  var hintDismissed = localStorage.getItem('dhp_hint');
+  if(!isStandalone && !hintDismissed){
+    setTimeout(function(){ document.getElementById('install-hint').style.display='block'; }, 1500);
+  }
+})();
+
+// Show toast notification helper
+function showToast(message, type='success', duration=2000){
+  var toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(function(){
+    toast.classList.add('fade-out');
+    setTimeout(function(){ toast.remove(); }, 300);
+  }, duration);
+}
+
+// PHASE 3: Event delegation for product blocks
+document.addEventListener('DOMContentLoaded', function() {
+
+  // Main tab bar - PHASE 3 optimization
+  document.querySelectorAll('#tab-bar .tb').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var s = btn.getAttribute('data-s');
+      document.querySelectorAll('.screen').forEach(function(el){ el.classList.remove('on'); });
+      document.querySelectorAll('#tab-bar .tb').forEach(function(el){ el.classList.remove('on'); });
+      document.getElementById('s-'+s).classList.add('on');
+      btn.classList.add('on');
+      window.scrollTo(0,0);
+    });
+  });
+
+  // Deal Health sub-tabs
+  document.querySelectorAll('#sub-tabs .stab').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var p = btn.getAttribute('data-p');
+      document.querySelectorAll('.dpanel').forEach(function(el){ el.classList.remove('on'); });
+      document.querySelectorAll('#sub-tabs .stab').forEach(function(el){ el.classList.remove('on'); });
+      document.getElementById(p).classList.add('on');
+      btn.classList.add('on');
+      window.scrollTo(0,0);
+    });
+  });
+
+  // Scripts vertical picker
+  document.querySelectorAll('#sp-row .sp').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var v = btn.getAttribute('data-v');
+      document.querySelectorAll('.sp').forEach(function(el){ el.classList.remove('on'); });
+      document.querySelectorAll('.vscript').forEach(function(el){ el.classList.remove('on'); });
+      btn.classList.add('on');
+      document.getElementById('vs-'+v).classList.add('on');
+    });
+  });
+
+  // Script step pills
+  document.querySelectorAll('.step-row').forEach(function(row) {
+    row.querySelectorAll('.stp').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var idx = parseInt(btn.getAttribute('data-i'));
+        var vs = btn.closest('.vscript');
+        vs.querySelectorAll('.stp').forEach(function(el){ el.classList.remove('on'); });
+        vs.querySelectorAll('.script-step').forEach(function(el,i){ el.classList.toggle('on', i===idx); });
+        btn.classList.add('on');
+      });
+    });
+  });
+
+  // CRM filter pills
+  document.querySelectorAll('#filter-row .fp').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('#filter-row .fp').forEach(function(el){ el.classList.remove('on'); });
+      btn.classList.add('on');
+      cFilter = btn.getAttribute('data-f');
+      renderContacts();
+    });
+  });
+
+  // Save contact
+  document.getElementById('btn-save-contact').addEventListener('click', saveContact);
+
+  // PHASE 3: Event delegation for calculator updates with debouncing
+  var calcUpdateTimeout;
+  var calcFields = ['c-provider','c-internet','c-lines','c-wireless','c-etf','t-internet','t-wireless'];
+  calcFields.forEach(function(id) {
+    var el = document.getElementById(id);
+    if(el) {
+      el.addEventListener('change', function() {
+        clearTimeout(calcUpdateTimeout);
+        calcUpdateTimeout = setTimeout(calcUpdate, 100);
+      });
+    }
+  });
+
+  // Copy calculator
+  document.getElementById('btn-copy-calc').addEventListener('click', copyCalcText);
+
+  // Deal Health button
+  document.getElementById('btn-add-voice').addEventListener('click', function(){ addDHBlock('voice').then(updateDealHealthLive); });
+  document.getElementById('btn-add-hsi').addEventListener('click', function(){ addDHBlock('hsi').then(updateDealHealthLive); });
+  document.getElementById('btn-add-tablet').addEventListener('click', function(){ addDHBlock('tablet').then(updateDealHealthLive); });
+  document.getElementById('btn-add-subsidy').addEventListener('click', function(){ addDHBlock('subsidy').then(updateDealHealthLive); });
+  document.getElementById('btn-calc-deal').addEventListener('click', calcDeal);
+  document.getElementById('btn-calc-strat').addEventListener('click', calcStrategy);
+  document.getElementById('btn-grow').addEventListener('click', calcGrowth);
+
+  // PHASE 3: Event delegation for plan dropdowns
+  document.getElementById('d-voice-blocks').addEventListener('change', function(e) {
+    if(e.target.classList.contains('vPlan')) {
+      var blk = e.target.closest('.blk');
+      var v = parseFloat(e.target.value);
+      if(v && blk) {
+        blk.querySelector('.vMRC').value = v;
+        updateDealHealthLive();
+      }
+    }
+  });
+
+  document.getElementById('d-voice-blocks').addEventListener('input', debounce(updateDealHealthLive, 100));
+  document.getElementById('d-hsi-blocks').addEventListener('input', debounce(updateDealHealthLive, 100));
+  document.getElementById('d-tablet-blocks').addEventListener('input', debounce(updateDealHealthLive, 100));
+  document.getElementById('d-subsidy-blocks').addEventListener('input', debounce(updateDealHealthLive, 100));
+
+  document.getElementById('d-tablet-blocks').addEventListener('change', function(e) {
+    if(e.target.classList.contains('tPlan')) {
+      var blk = e.target.closest('.blk');
+      var v = parseFloat(e.target.value);
+      if(v && blk) {
+        blk.querySelector('.tMRC').value = v;
+        updateDealHealthLive();
+      }
+    }
+  });
+
+  // PHASE 5: Save/Load deal templates
+  document.getElementById('btn-save-template').addEventListener('click', saveTemplate);
+  document.getElementById('template-load').addEventListener('change', loadTemplate);
+
+  // Init
+  addDHBlock('hsi');
+  calcUpdate();
+  renderContacts();
+  loadTemplates();
+
+  // Sync account type to promo filter
+  var acctEl = document.getElementById('d-accttype');
+  if(acctEl) acctEl.addEventListener('change', function(){
+    var v = this.value === 'taxid' ? 'taxid' : 'ssn';
+    filterPromos(v);
+  });
+
+  // Auto-fill deal from contact - PHASE 5
+  if(document.getElementById('btn-create-deal')) {
+    document.getElementById('btn-create-deal').addEventListener('click', createDealFromContact);
+  }
+});
+
+// PHASE 1: Real-time Health Snapshot - Debounce helper
+function debounce(func, wait) {
+  var timeout;
+  return function() {
+    var context = this, args = arguments;
+    clearTimeout(timeout);
+    timeout = setTimeout(function() { func.apply(context, args); }, wait);
+  };
+}
+
+// PHASE 1: Update deal health live
+function updateDealHealthLive(){
+  var snapshot = document.getElementById('d-health-snapshot');
+  var grp = function(sel,mC,lC,cC){
+    var m=0,l=0,c=0;
+    document.querySelectorAll(sel).forEach(function(b){
+      m+=(parseFloat(b.querySelector('.'+mC).value)||0)*(parseInt(b.querySelector('.'+lC).value)||0);
+      l+=parseInt(b.querySelector('.'+lC).value)||0;
+      c+=parseFloat(b.querySelector('.'+cC).value)||0;
+    });
+    return {mrc:m,lines:l,cc:c};
+  };
+
+  var v=grp('.voice-blk','vMRC','vLines','vCC');
+  var h=grp('.hsi-blk','hMRC','hLines','hCC');
+  var t=grp('.tablet-blk','tMRC','tLines','tAC');
+  var s=grp('.subsidy-blk','sMRC','sLines','sCC');
+
+  var totalMRC = v.mrc+h.mrc+t.mrc+s.mrc;
+  var totalLines = v.lines+h.lines+t.lines+s.lines;
+  var totalCC = v.cc+h.cc+t.cc+s.cc;
+
+  if(totalMRC === 0) {
+    snapshot.style.display = 'none';
+    return;
+  }
+
+  snapshot.style.display = 'block';
+
+  var margin = v.mrc*0.80 + h.mrc*0.90 + t.mrc*0.80 + s.mrc*0.80;
+  var dur = parseInt(document.getElementById('d-dur').value)||24;
+  var adjARPU = totalLines>0&&dur>0 ? (totalMRC-(totalCC/dur))/totalLines : (totalMRC/totalLines);
+  var beMonths = margin>0 ? totalCC/margin : 0;
+
+  var THRESH=24;
+  var FLOOR=17;
+
+  // Update snapshot cells
+  document.getElementById('snap-mrc').textContent = '$'+Math.round(totalMRC);
+  document.getElementById('snap-lines').textContent = totalLines;
+  document.getElementById('snap-arpu').textContent = '$'+adjARPU.toFixed(2);
+  document.getElementById('snap-breakeven').textContent = beMonths>0 ? beMonths.toFixed(1)+'mo' : '-';
+
+  // Health score (same logic as calcDeal)
+  var beP  = beMonths<=3?0:beMonths<=6?10:beMonths<=12?25:beMonths<=24?45:65;
+  var arP  = adjARPU>=30?0:adjARPU>=THRESH?10:adjARPU>=FLOOR?25:50;
+  var score= Math.max(0,Math.min(100,100-beP-arP));
+
+  var barC = score>=70?'#0d5c2a':score>=40?'#7a5400':'#9a3800';
+  document.getElementById('snap-bar').style.background = barC;
+  document.getElementById('snap-bar').style.width = score+'%';
+  document.getElementById('snap-score').textContent = Math.round(score)+'/100';
+
+  // Status badge
+  var statusBadge = document.getElementById('snap-status');
+  statusBadge.textContent = score>=70?'Healthy':score>=40?'Caution':'At Risk';
+  statusBadge.className = 'snap-status-badge '+(score>=70?'snap-status-good':score>=40?'snap-status-warn':'snap-status-bad');
+
+  // Class on snapshot div
+  snapshot.classList.remove('health-good','health-warn','health-bad');
+  snapshot.classList.add(score>=70?'health-good':score>=40?'health-warn':'health-bad');
+
+  // Suggestions
+  var suggestions = document.getElementById('snap-suggestions');
+  var suggText = '';
+  if(totalLines>0 && adjARPU<THRESH){
+    suggText = '💡 <b>Low ARPU:</b> Need ~$'+(Math.ceil((THRESH+totalCC/totalLines/dur)*totalLines))+'/mo MRC to hit $'+THRESH;
+  } else if(totalCC > 1000) {
+    suggText = '⚠️ <b>High Credits:</b> Review duration or add more lines to spread cost';
+  } else if(beMonths > 36) {
+    suggText = '⚠️ <b>Long Breakeven:</b> Consider shorter duration or higher MRC plan';
+  }
+
+  if(suggText) {
+    suggestions.innerHTML = suggText;
+    suggestions.style.display = 'block';
+  } else {
+    suggestions.style.display = 'none';
+  }
+}
+
+// CRM ---------------------------------------------------------------
+var contacts = (function(){ try{ return JSON.parse(localStorage.getItem('dhp_contacts')||'[]'); }catch(e){ return []; } })();
+var cFilter = 'all';
+var sLabels = {new:'New',follow:'Follow-up',hot:'Hot',closed:'Closed',dead:'Not interested'};
+var sBadge  = {new:'bn',follow:'bf',hot:'bh',closed:'bc',dead:'bd'};
+
+function saveContact() {
+  var biz = document.getElementById('f-biz').value.trim();
+  if(!biz){ alert('Business name is required.'); return; }
+
+  // PHASE 4: Validation
+  var bill = parseFloat(document.getElementById('f-bill').value)||0;
+  var ispBill = parseFloat(document.getElementById('f-isp-bill').value)||0;
+  if(bill<0 || ispBill<0) { alert('Bills cannot be negative'); return; }
+
+  contacts.unshift({
+    id: Date.now(),
+    biz: biz,
+    contact: document.getElementById('f-contact').value.trim(),
+    phone: document.getElementById('f-phone').value.trim(),
+    email: document.getElementById('f-email').value.trim(),
+    zip: (function(){ var z=document.getElementById('f-zip').value; return z==='other' ? document.getElementById('f-zip-other').value : z; })(),
+    status: document.getElementById('f-status').value,
+    type: document.getElementById('f-type').value,
+    wireless: document.getElementById('f-wireless').value,
+    provider: document.getElementById('f-provider').value,
+    hasboth: document.getElementById('f-hasboth').checked,
+    linecount: document.getElementById('f-linecount').value,
+    bill: bill,
+    ispbill: ispBill,
+    date: document.getElementById('f-date').value,
+    notes: document.getElementById('f-notes').value.trim(),
+    ts: new Date().toLocaleDateString()
+  });
+  try{ localStorage.setItem('dhp_contacts', JSON.stringify(contacts)); }catch(e){}
+
+  // Clear form with animation
+  document.getElementById('f-biz').value='';
+  document.getElementById('f-contact').value='';
+  document.getElementById('f-phone').value='';
+  document.getElementById('f-email').value='';
+  document.getElementById('f-bill').value='';
+  document.getElementById('f-isp-bill').value='';
+  document.getElementById('f-linecount').value='';
+  document.getElementById('f-notes').value='';
+  document.getElementById('f-zip').value='';
+  document.getElementById('f-zip-other').style.display='none';
+  document.getElementById('f-zip-other').value='';
+  document.getElementById('f-hasboth').checked=false;
+  document.getElementById('f-status').value='new';
+  document.getElementById('f-type').value='';
+  document.getElementById('f-wireless').value='';
+  document.getElementById('f-provider').value='';
+  document.getElementById('f-date').value='';
+
+  showToast('✓ Contact saved!', 'success', 2000);
+  renderContacts();
+}
+
+function renderContacts() {
+  var list = document.getElementById('contact-list');
+  var items = cFilter==='all' ? contacts : contacts.filter(function(c){ return c.status===cFilter; });
+  if(!items.length){
+    list.innerHTML = '<div class="empty">'+(contacts.length ? 'No contacts match this filter.' : 'No contacts yet.<br>Add your first one above.')+'</div>';
+    return;
+  }
+  list.innerHTML = items.map(function(c){
+    var wStr = [c.wireless, c.provider].filter(Boolean).join(' / ');
+    var bStr = [c.bill?'W:$'+c.bill:'', c.ispbill?'I:$'+c.ispbill:''].filter(Boolean).join(', ');
+    var meta = [c.contact, c.phone, c.email, c.zip+(c.linecount?' ('+c.linecount+' lines)':''), c.type, wStr||'', bStr].filter(Boolean).join(' . ') + (c.date?' . Follow-up: '+c.date:'');
+    var opts = Object.entries(sLabels).map(function(e){ return '<option value="'+e[0]+'"'+(c.status===e[0]?' selected':'')+'>'+e[1]+'</option>'; }).join('');
+    // PHASE 5: Add "Create Deal" button
+    return '<div class="cc" data-id="'+c.id+'"><div class="cc-top"><div class="cc-biz">'+c.biz+'</div><span class="badge '+sBadge[c.status]+'">'+sLabels[c.status]+'</span></div><div class="cc-meta">'+meta+'</div>'+(c.notes?'<div class="cc-note">'+c.notes+'</div>':'')+'<div class="cc-acts"><select class="status-sel" data-id="'+c.id+'" style="flex:1;font-size:13px;padding:8px 30px 8px 10px">'+opts+'</select><button class="bsm bsm-g deal-btn" data-id="'+c.id+'" title="Create deal">🤝 Deal</button><button class="bsm bsm-g copy-btn" data-id="'+c.id+'">📋 Log</button><button class="bsm bsm-r del-btn" data-id="'+c.id+'">🗑</button></div></div>';
+  }).join('');
+
+  // Attach events
+  list.querySelectorAll('.status-sel').forEach(function(sel){
+    sel.addEventListener('change', function(){
+      var id = parseInt(sel.getAttribute('data-id'));
+      var c = contacts.find(function(x){ return x.id===id; });
+      if(c){ c.status=sel.value; try{ localStorage.setItem('dhp_contacts', JSON.stringify(contacts)); }catch(e){} renderContacts(); }
+    });
+  });
+
+  // PHASE 5: Deal button
+  list.querySelectorAll('.deal-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id = parseInt(btn.getAttribute('data-id'));
+      var c = contacts.find(function(x){ return x.id===id; });
+      if(c) { createDealFromContact(c); }
+    });
+  });
+
+  list.querySelectorAll('.copy-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      exportContact(parseInt(btn.getAttribute('data-id')));
+    });
+  });
+  list.querySelectorAll('.del-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      if(confirm('Delete this contact?')){
+        var id = parseInt(btn.getAttribute('data-id'));
+        contacts = contacts.filter(function(x){ return x.id!==id; });
+        try{ localStorage.setItem('dhp_contacts', JSON.stringify(contacts)); }catch(e){}
+        renderContacts();
+      }
+    });
+  });
+}
+
+function exportContact(id) {
+  var c = contacts.find(function(x){ return x.id===id; });
+  if(!c) return;
+  var txt = 'BUSINESS: '+c.biz+'\nCONTACT: '+(c.contact||'--')+'\nPHONE: '+(c.phone||'--')+'\nEMAIL: '+(c.email||'--')+'\nWIRELESS CARRIER: '+(c.wireless||'--')+'\nINTERNET PROVIDER: '+(c.provider||'--')+'\nHAS BOTH W/SAME PROVIDER: '+(c.hasboth?'Yes':'No')+'\nLINES ON ACCOUNT: '+(c.linecount||'--')+'\nWIRELESS BILL: '+(c.bill?'$'+c.bill:'--')+'\nINTERNET BILL: '+(c.ispbill?'$'+c.ispbill:'--')+'\nZIP: '+(c.zip||'--')+'\nTYPE: '+(c.type||'--')+'\nSTATUS: '+sLabels[c.status]+'\nFOLLOW-UP: '+(c.date||'--')+'\nNOTES: '+(c.notes||'--')+'\nLOGGED: '+c.ts+'\n---\nSource: T-Mobile Field Log';
+  iosShare(txt, c.biz+' - Field Log');
+}
+
+// PHASE 5: Create deal from contact
+function createDealFromContact(c){
+  document.getElementById('d-biz').value = c.biz||'';
+  document.getElementById('d-compmrc').value = Math.round(c.bill + c.ispbill)||'';
+  if(c.linecount) {
+    document.getElementById('d-voice-blocks').innerHTML = '';
+    addDHBlock('voice').then(function(){
+      document.querySelector('.vLines').value = c.linecount;
+      updateDealHealthLive();
+    });
+  }
+
+  // Switch to Deal Health
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('on'));
+  document.querySelectorAll('#tab-bar .tb').forEach(el => el.classList.remove('on'));
+  document.getElementById('s-deal').classList.add('on');
+  document.querySelector('[data-s="deal"]').classList.add('on');
+
+  // Switch to Products tab
+  document.querySelectorAll('.dpanel').forEach(el => el.classList.remove('on'));
+  document.querySelectorAll('#sub-tabs .stab').forEach(el => el.classList.remove('on'));
+  document.getElementById('dh-products').classList.add('on');
+  document.querySelector('[data-p="dh-products"]').classList.add('on');
+
+  window.scrollTo(0,0);
+  showToast('✓ Deal created from contact!', 'success');
+}
+
+// CALCULATOR ---------------------------------------------------------
+var _lc = {};
+function calcUpdate() {
+  var internet = parseFloat(document.getElementById('c-internet').value)||0;
+  var lines    = parseInt(document.getElementById('c-lines').value)||0;
+  var perLine  = parseFloat(document.getElementById('c-wireless').value)||0;
+  var etf      = parseFloat(document.getElementById('c-etf').value)||0;
+  var tInt     = parseFloat(document.getElementById('t-internet').value)||70;
+  var tPer     = parseFloat(document.getElementById('t-wireless').value)||40;
+  var their    = internet + lines*perLine;
+  var tmo      = tInt + lines*tPer;
+  var mSave    = their - tmo;
+  var ySave    = mSave*12 - etf;
+  var beMonths = etf>0&&mSave>0 ? Math.ceil(etf/mSave) : 0;
+  _lc = {internet,lines,perLine,etf,tInt,tPer,their,tmo,mSave,ySave,beMonths,prov:document.getElementById('c-provider').selectedOptions[0].text};
+  var gc = mSave>=0?'#0d5c2a':'#9a3800';
+  var gyc= ySave>=0?'#0d5c2a':'#9a3800';
+  document.getElementById('calc-results').innerHTML =
+    '<div class="big-save"><div class="amt">'+(mSave>=0?'$'+Math.round(mSave).toLocaleString():'-$'+Math.round(Math.abs(mSave)).toLocaleString())+'</div><div class="lbl">estimated monthly savings</div></div>'+
+    '<div class="res-box">'+
+      '<div class="res-row"><span class="res-lbl">Their monthly total</span><span class="res-val lv">$'+Math.round(their).toLocaleString()+'/mo</span></div>'+
+      '<div class="res-row"><span class="res-lbl">T-Mobile monthly total</span><span class="res-val wv">$'+Math.round(tmo).toLocaleString()+'/mo</span></div>'+
+      '<div class="res-row"><span class="res-lbl">Monthly savings</span><span class="res-val" style="color:'+gc+'">$'+Math.round(Math.abs(mSave))+'/mo'+(mSave<0?' more':'')+'</span></div>'+
+      '<div class="res-row"><span class="res-lbl">1-year savings (after ETF)</span><span class="res-val" style="color:'+gyc+'">$'+Math.round(Math.abs(ySave)).toLocaleString()+' '+(ySave<0?'cost':'saved')+'</span></div>'+
+      (etf>0&&mSave>0?'<div class="res-row"><span class="res-lbl">Break-even on ETF</span><span class="res-val">'+beMonths+' month'+(beMonths!==1?'s':'')+'</span></div>':'')+
+    '</div>'+
+    '<div class="res-box">'+
+      '<div class="res-row"><span class="res-lbl">Their internet</span><span class="res-val">$'+Math.round(internet)+'/mo</span></div>'+
+      '<div class="res-row"><span class="res-lbl">T-Mobile Internet</span><span class="res-val wv">$'+Math.round(tInt)+'/mo</span></div>'+
+      '<div class="res-row"><span class="res-lbl">Their wireless ('+lines+' lines)</span><span class="res-val">$'+Math.round(lines*perLine)+'/mo</span></div>'+
+      '<div class="res-row"><span class="res-lbl">T-Mobile wireless ('+lines+' lines)</span><span class="res-val wv">$'+Math.round(lines*tPer)+'/mo</span></div>'+
+    '</div>';
+}
+
+function copyCalcText() {
+  var d = _lc;
+  if(!d.prov) return;
+  var etfLine = d.etf>0 ? '\nEarly termination fee: $'+Math.round(d.etf)+'\nBreak-even: '+d.beMonths+' month(s)' : '';
+  var txt = 'T-MOBILE vs '+d.prov.toUpperCase()+'\n'+'-'.repeat(30)+'\nTheir monthly total: $'+Math.round(d.their)+'/mo\nT-Mobile monthly total: $'+Math.round(d.tmo)+'/mo\nMonthly savings: $'+Math.round(Math.abs(d.mSave))+(d.mSave<0?' (more)':' saved')+etfLine+'\n1-year savings: $'+Math.round(Math.abs(d.ySave))+(d.ySave<0?' cost':' saved')+'\n'+'-'.repeat(30)+'\nInternet: $'+Math.round(d.internet)+' -> $'+Math.round(d.tInt)+'/mo\nWireless ('+d.lines+' lines): $'+Math.round(d.lines*d.perLine)+' -> $'+Math.round(d.lines*d.tPer)+'/mo\n\n30-day guarantee. No contract.';
+  iosShare(txt,'T-Mobile Deal Summary',function(){ showToast('✓ Copied to clipboard!'); });
+}
+
+// DEAL HEALTH ---------------------------------------------------------
+function addDHBlock(type) {
+  return new Promise(function(resolve) {
+    var container = document.getElementById('d-'+type+'-blocks');
+    if(!container) return resolve();
+
+    var el = document.createElement('div');
+    el.className = 'blk '+type+'-blk blk-add-confirm';
+
+    if(type==='hsi') {
+      el.innerHTML = '<div class="blk-hdr"><span class="blk-lbl">HSI line</span><button class="rm">x</button></div>'+
+      '<div class="r2"><div><label>Internet plan</label><select class="hPlan"><optgroup label="BI Unlimited"><option value="70">$70 BI Unl w/Gateway</option><option value="90">$90 BI Unl w/Router+Install</option><option value="60">$60 BI Unl BYOD</option><option value="80">$80 BI Unl BYOD+Install</option></optgroup><optgroup label="BI w/Voice Promos"><option value="55">$55 BI w/Voice Router/GW</option><option value="45">$45 BI w/Voice BYOD</option></optgroup><optgroup label="Fixed Wireless"><option value="65">40GB Fixed Wireless | $65</option><option value="95">60GB Fixed Wireless | $95</option><option value="160">100GB Fixed Wireless | $160</option></optgroup><optgroup label="Cradlepoint"><option value="50">$50 100GB</option><option value="70">$70 300GB</option></optgroup><optgroup label="Hotspot/Laptop"><option value="25">Bus Laptop 75GB | $25</option><option value="40">Bus Laptop 125GB | $40</option></optgroup><optgroup label="Backup BI"><option value="30">Backup BI | $30</option></optgroup></select></div>'+
+      '<div><label>MRC ($)</label><input type="number" class="hMRC" value="70" inputmode="decimal"></div></div>'+
+      '<div class="r2"><div><label>Lines</label><input type="number" class="hLines" value="1" inputmode="numeric"></div><div><label>CC ($)</label><input type="number" class="hCC" value="0" inputmode="decimal"></div></div>'+
+      '<div><label>Promo</label><input class="hPromo" placeholder="No Promo Selected" autocorrect="off"></div>';
+      el.querySelector('.hPlan').addEventListener('change', function(){ el.querySelector('.hMRC').value = parseFloat(this.value)||70; updateDealHealthLive(); });
+    } else if(type==='voice') {
+      el.innerHTML = '<div class="blk-hdr"><span class="blk-lbl">Voice group</span><button class="rm">x</button></div>'+
+      '<div class="r2"><div><label>Rate plan</label><select class="vPlan"><optgroup label="New Plans"><option value="25">CoreMobile | $25</option><option value="40" selected>ProMobile | $40</option><option value="50">SuperMobile | $50</option><option value="45">Experience More | $45</option><option value="55">Experience Beyond | $55</option></optgroup><optgroup label="Go5G"><option value="35">Go5G Business | $35</option><option value="45">Go5G+ Business | $45</option><option value="55">Go5G Next | $55</option></optgroup><optgroup label="Bus. Unlimited"><option value="25">Bus. Unl Select | $25</option><option value="30">Bus. Unl Advanced | $30</option><option value="40">Bus. Unl Ultimate | $40</option><option value="45">Bus. Unl Edge | $45</option></optgroup></select></div>'+
+      '<div><label>MRC/line ($)</label><input type="number" class="vMRC" value="40" inputmode="decimal"></div></div>'+
+      '<div class="r3"><div><label>Lines</label><input type="number" class="vLines" value="1" inputmode="numeric"></div><div><label>Device</label><select class="vDevice"><option>BYOD</option><option>New Device</option><option>CPO</option></select></div><div><label>Port?</label><select class="vPort"><option value="">No</option><option value="Y">Y</option><option value="N">N</option><option value="BF">BF</option></select></div></div>'+
+      '<div class="r2"><div><label>Promo</label><input class="vPromo" placeholder="No Promo" autocorrect="off"></div><div><label>CC ($)</label><input type="number" class="vCC" value="0" inputmode="decimal"></div></div>';
+      el.querySelector('.vPlan').addEventListener('change', function(){ el.querySelector('.vMRC').value = parseFloat(this.value)||40; updateDealHealthLive(); });
+    } else if(type==='tablet') {
+      el.innerHTML = '<div class="blk-hdr"><span class="blk-lbl">Tablet / MINT</span><button class="rm">x</button></div>'+
+      '<div class="r2"><div><label>Plan</label><select class="tPlan"><optgroup label="Tablet"><option value="25">Tablet Unlimited | $25</option><option value="30">Tablet Unl Plus | $30</option><option value="15">Tablet Promo | $15</option></optgroup><optgroup label="T-Priority Tablet"><option value="30">T-Priority 15GB | $30</option><option value="40">T-Priority Unl | $40</option></optgroup><optgroup label="MINT/Watch"><option value="15">Apple Watch Standalone | $15</option><option value="15">Android Watch Standalone | $15</option><option value="25">Linkport 15GB | $25</option><option value="12">SyncUp KIDS Watch | $12</option></optgroup></select></div>'+
+      '<div><label>MRC ($)</label><input type="number" class="tMRC" value="25" inputmode="decimal"></div></div>'+
+      '<div class="r2"><div><label>Lines</label><input type="number" class="tLines" value="1" inputmode="numeric"></div><div><label>Activation credit ($)</label><input type="number" class="tAC" value="0" inputmode="decimal"></div></div>';
+      el.querySelector('.tPlan').addEventListener('change', function(){ el.querySelector('.tMRC').value = parseFloat(this.value)||25; updateDealHealthLive(); });
+    } else if(type==='subsidy') {
+      el.innerHTML = '<div class="blk-hdr"><span class="blk-lbl">Subsidy voice</span><button class="rm">x</button></div>'+
+      '<div class="r2"><div><label>Plan</label><select class="sPlan"><optgroup label="24 Month"><option value="25">Ent. Unl $25/24mo</option><option value="35">Ent. Unl $35/24mo</option><option value="45">Ent. Unl $45/24mo</option></optgroup><optgroup label="36 Month"><option value="25">Ent. Unl $25/36mo</option><option value="35">Ent. Unl $35/36mo</option><option value="45">Ent. Unl $45/36mo</option></optgroup></select></div>'+
+      '<div><label>MRC/line ($)</label><input type="number" class="sMRC" value="35" inputmode="decimal"></div></div>'+
+      '<div class="r2"><div><label>Lines</label><input type="number" class="sLines" value="1" inputmode="numeric"></div><div><label>CC ($)</label><input type="number" class="sCC" value="0" inputmode="decimal"></div></div>';
+      el.querySelector('.sPlan').addEventListener('change', function(){ el.querySelector('.sMRC').value = parseFloat(this.value)||35; updateDealHealthLive(); });
+    }
+
+    el.querySelector('.rm').addEventListener('click', function(){ el.remove(); updateDealHealthLive(); });
+    container.appendChild(el);
+    setTimeout(resolve, 100);
+  });
+}
+
+// Simplified getTotals for real-time
+function getTotals(sel, mrcSel, linesSel, ccSel) {
+  var mrc=0, lines=0, cc=0;
+  document.querySelectorAll(sel).forEach(function(b){
+    mrc  += (parseFloat(b.querySelector('.'+mrcSel).value)||0) * (parseInt(b.querySelector('.'+linesSel).value)||0);
+    lines += parseInt(b.querySelector('.'+linesSel).value)||0;
+    cc   += parseFloat(b.querySelector('.'+ccSel).value)||0;
+  });
+  return {mrc:mrc, lines:lines, cc:cc};
+}
+
+function calcDeal() {
+  function grp(sel,mC,lC,cC){
+    var m=0,l=0,c=0;
+    document.querySelectorAll(sel).forEach(function(b){
+      m+=(parseFloat(b.querySelector('.'+mC).value)||0)*(parseInt(b.querySelector('.'+lC).value)||0);
+      l+=parseInt(b.querySelector('.'+lC).value)||0;
+      c+=parseFloat(b.querySelector('.'+cC).value)||0;
+    });
+    return {mrc:m,lines:l,cc:c};
+  }
+  var v=grp('.voice-blk','vMRC','vLines','vCC');
+  var h=grp('.hsi-blk','hMRC','hLines','hCC');
+  var t=grp('.tablet-blk','tMRC','tLines','tAC');
+  var s=grp('.subsidy-blk','sMRC','sLines','sCC');
+
+  var totalMRC   = v.mrc+h.mrc+t.mrc+s.mrc;
+  var totalLines = v.lines+h.lines+t.lines+s.lines;
+  var totalCC    = v.cc+h.cc+t.cc+s.cc;
+
+  if(totalMRC === 0) {
+    document.getElementById('d-health-out').innerHTML = '<div class="alert ar">Please add at least one product to calculate deal health.</div>';
+    return;
+  }
+
+  var freeLines  = parseInt(document.getElementById('d-freelines').value)||0;
+  var freeMRC    = parseFloat(document.getElementById('d-freemrc').value)||0;
+  var freeDisc   = freeLines * freeMRC;
+  var effectiveMRC = totalMRC - freeDisc;
+
+  var custPay    = parseFloat(document.getElementById('d-custpay').value)||0;
+  var partnerBill= document.getElementById('d-partner-bill').value === 'yes';
+  var pkgStrat   = document.getElementById('d-pkgstrat').value;
+
+  var margin = v.mrc*0.80 + h.mrc*0.90 + t.mrc*0.80 + s.mrc*0.80;
+
+  var dur      = parseInt(document.getElementById('d-dur').value)||24;
+  var freq     = document.getElementById('d-freq').value;
+  var smLimit  = parseFloat(document.getElementById('d-sm').value)||1000;
+  var dirLimit = parseFloat(document.getElementById('d-dir').value)||2000;
+  var vpLimit  = parseFloat(document.getElementById('d-vp').value)||4999;
+
+  var numI    = freq==='One Time'?1:freq==='Quarterly'?Math.ceil(dur/3):freq==='Annual'?Math.ceil(dur/12):dur;
+  var instAmt = numI>0 ? totalCC/numI : 0;
+
+  var monthlyCredit = freq==='Monthly' ? instAmt : freq==='Quarterly' ? instAmt/3 : freq==='One Time' ? totalCC/dur : instAmt/12;
+  var effectiveBill = effectiveMRC - monthlyCredit;
+
+  var blendARPU = totalLines>0 ? totalMRC/totalLines : 0;
+  var adjARPU   = totalLines>0&&dur>0 ? (totalMRC-(totalCC/dur))/totalLines : blendARPU;
+  var ccPerLineMo = totalLines>0&&dur>0 ? totalCC/totalLines/dur : 0;
+
+  var beMonths = margin>0 ? totalCC/margin : 0;
+
+  var dh='Within Guidelines',dhp='hpg';
+  var apv='None required',apvp='hpg';
+  if(totalCC>smLimit){dh='Sr Manager review';dhp='hpy';apv='Sr Manager required';apvp='hpy';}
+  if(totalCC>dirLimit){dh='Director review';dhp='hpy';apv='Director required';apvp='hpy';}
+  if(totalCC>vpLimit){dh='VP / Biz Mgmt required';dhp='hpr';apv='VP / Biz Mgmt required';apvp='hpr';}
+  if(beMonths>36){dh='Breakeven >36mo -- escalate';dhp='hpr';}
+
+  var THRESH=24, FLOOR=17;
+  var ah='Strong ARPU',ahp='hpg';
+  if(totalLines>0){
+    if(adjARPU<FLOOR){ah='Critical ARPU -- below $'+FLOOR;ahp='hpr';}
+    else if(adjARPU<THRESH){ah='Low ARPU -- needs review';ahp='hpy';}
+    else if(adjARPU<30){ah='Acceptable ARPU';ahp='hpg';}
+  }
+
+  var beP  = beMonths<=3?0:beMonths<=6?10:beMonths<=12?25:beMonths<=24?45:65;
+  var arP  = adjARPU>=30?0:adjARPU>=THRESH?10:adjARPU>=FLOOR?25:50;
+  var score= Math.max(0,Math.min(100,100-beP-arP));
+  var barC = score>=70?'#0d5c2a':score>=40?'#7a5400':'#9a3800';
+
+  var acqVal = totalMRC*dur;
+  var annMar = margin*12;
+
+  var billFit = '';
+  if(custPay>0){
+    var diff = custPay - effectiveBill;
+    if(diff>=0){
+      billFit = '<div class="alert ag">Customer bill: <b>$'+effectiveBill.toFixed(2)+'/mo</b> effective. That\'s <b>$'+diff.toFixed(2)+' under</b> their $'+custPay+' comfort zone. Great fit.</div>';
+    } else {
+      billFit = '<div class="alert ar">Customer bill: <b>$'+effectiveBill.toFixed(2)+'/mo</b> effective. That\'s <b>$'+Math.abs(diff).toFixed(2)+' over</b> their $'+custPay+' comfort zone. Increase credits or reduce lines.</div>';
+    }
+  }
+
+  var arpuTip='';
+  if(totalLines>0&&adjARPU<THRESH){
+    var needMRC=Math.ceil((THRESH+ccPerLineMo)*totalLines);
+    arpuTip='<div class="alert ay">Need ~<b>$'+needMRC+'</b>/mo MRC to hit $'+THRESH+' adj ARPU (currently $'+totalMRC+'). Add HSI at $70, upgrade plans by $'+Math.ceil((needMRC-totalMRC)/totalLines)+'/line, or reduce credits.</div>';
+  } else if(totalLines>0){
+    arpuTip='<div class="alert ag">Adj ARPU $'+adjARPU.toFixed(2)+' clears $'+THRESH+' threshold.</div>';
+  }
+
+  var pkgLabel = {
+    '6mo':'6-month package','7mo':'7-month package (standard)','12mo':'12-month package','24mo':'24-month contract'
+  }[pkgStrat]||'';
+  var pkgHTML = '';
+  if(pkgLabel){
+    var pkgMonths = parseInt(pkgStrat)||7;
+    var totalCredInPkg = freq==='Quarterly' ? instAmt*Math.floor(pkgMonths/3) : freq==='Monthly' ? instAmt*pkgMonths : totalCC;
+    pkgHTML = '<div class="card"><div class="card-title">Package strategy -- '+pkgLabel+'</div>'+
+      '<div class="sr"><span>Credits paid out in '+pkgMonths+' months</span><span style="font-weight:700;color:'+barC+'">$'+totalCredInPkg.toFixed(2)+'</span></div>'+
+      '<div class="sr"><span>Customer effective bill</span><span style="font-weight:700">$'+effectiveBill.toFixed(2)+'/mo</span></div>'+
+      (freeDisc>0?'<div class="sr"><span>Free line discount ('+freeLines+' lines)</span><span>-$'+freeDisc.toFixed(2)+'/mo</span></div>':'')+
+      (partnerBill?'<div class="alert ab" style="margin-top:8px">Partner covers Bill 1 (~$'+effectiveMRC.toFixed(2)+'). Credit installment covers Bill 2 (~$'+(effectiveMRC-instAmt>0?effectiveMRC-instAmt:0).toFixed(2)+' net).</div>':'')+
+      '<div class="alert ag" style="margin-top:8px"><b>Top 3 Qs:</b><br>1. What is the customer comfortable paying? -> <b>'+(custPay?'$'+custPay+'/mo':' Enter above')+'</b><br>2. What are they getting? -> <b>'+totalLines+' lines, '+[v.lines>0?v.lines+' voice':'',h.lines>0?h.lines+' HSI':'',t.lines>0?t.lines+' tablet':'',s.lines>0?s.lines+' subsidy':''].filter(Boolean).join(', ')+'</b><br>3. Does the 6-7mo package work? -> <b>'+(effectiveBill<=custPay||custPay===0?'Yes -- bill fits':'No -- adjust credits or lines')+'</b></div>'+
+    '</div>';
+  }
+
+  var mos=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var today=new Date(), allMonths=[];
+  if(freq==='One Time'){
+    var d0=new Date(today);d0.setMonth(d0.getMonth()+1);
+    allMonths.push({n:1,lbl:mos[d0.getMonth()]+" '"+(d0.getFullYear()%100),amt:totalCC});
+  } else if(freq==='Quarterly'){
+    for(var i=0;i<numI;i++){
+      var d0=new Date(today);d0.setMonth(d0.getMonth()+(i*3)+1);
+      allMonths.push({n:i+1,lbl:'Q'+(i+1)+' ('+mos[d0.getMonth()]+" '"+(d0.getFullYear()%100)+')',amt:instAmt});
+    }
+  } else if(freq==='Annual'){
+    for(var i=0;i<numI;i++){
+      var d0=new Date(today);d0.setMonth(d0.getMonth()+(i*12)+1);
+      allMonths.push({n:i+1,lbl:'Year '+(i+1)+' ('+mos[d0.getMonth()]+" '"+(d0.getFullYear()%100)+')',amt:instAmt});
+    }
+  } else {
+    for(var i=0;i<numI;i++){
+      var d0=new Date(today);d0.setMonth(d0.getMonth()+i+1);
+      allMonths.push({n:i+1,lbl:mos[d0.getMonth()]+" '"+(d0.getFullYear()%100),amt:instAmt});
+    }
+  }
+
+  function buildQuarterGrid(months){
+    var out='';
+    var chunkSize=(freq==='Monthly')?3:1;
+    for(var q=0;q<months.length;q+=chunkSize){
+      var chunk=months.slice(q,q+chunkSize);
+      var qNum=Math.floor(q/chunkSize)+1;
+      out+='<div style="margin-bottom:14px">';
+      if(freq==='Monthly'){
+        out+='<div style="font-size:11px;font-weight:700;color:#fff;background:'+barC+';border-radius:6px;padding:4px 10px;margin-bottom:6px;display:inline-block">Quarter '+qNum+'</div>';
+        out+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">';
+        chunk.forEach(function(m){
+          out+='<div style="background:#2c2c2e;border-radius:10px;padding:8px;text-align:center">'+
+            '<div style="font-size:10px;font-weight:700;color:#8e8e93;margin-bottom:2px">Month '+m.n+'</div>'+
+            '<div style="font-size:11px;color:#636366;margin-bottom:4px">'+m.lbl+'</div>'+
+            '<div style="font-size:14px;font-weight:700;color:'+barC+'">$'+m.amt.toFixed(2)+'</div>'+
+          '</div>';
+        });
+        out+='</div>';
+      } else {
+        chunk.forEach(function(m){
+          out+='<div class="sr"><span>'+m.lbl+'</span><span style="font-weight:700;color:'+barC+'">$'+m.amt.toFixed(2)+'</span></div>';
+        });
+      }
+      out+='</div>';
+    }
+    return out;
+  }
+  var tlHTML=buildQuarterGrid(allMonths);
+
+  document.getElementById('d-health-out').innerHTML=
+    (billFit?'<div class="card"><div class="card-title">Customer bill check</div>'+billFit+'</div>':'')+
+    pkgHTML+
+    '<div class="card"><div class="card-title">Deal summary</div><div class="mg">'+
+      '<div class="mc"><div class="mv">$'+totalMRC.toLocaleString()+'</div><div class="ml">Total MRC</div></div>'+
+      '<div class="mc"><div class="mv">'+totalLines+'</div><div class="ml">Lines</div></div>'+
+      '<div class="mc"><div class="mv">$'+effectiveBill.toFixed(2)+'</div><div class="ml">Eff. monthly bill</div></div>'+
+      '<div class="mc"><div class="mv">$'+adjARPU.toFixed(2)+'</div><div class="ml">Adj ARPU</div></div>'+
+      '<div class="mc"><div class="mv">$'+totalCC.toLocaleString()+'</div><div class="ml">Total CC</div></div>'+
+      '<div class="mc"><div class="mv">$'+Math.round(margin)+'</div><div class="ml">Monthly margin</div></div>'+
+    '</div></div>'+
+    '<div class="card"><div class="card-title">Deal health score</div>'+
+      '<div class="hbar"><div class="hfill" style="width:'+score+'%;background:'+barC+'"></div></div>'+
+      '<div style="text-align:center;font-size:26px;font-weight:700;color:'+barC+';margin-bottom:11px">'+Math.round(score)+'/100</div>'+
+      '<div class="sr"><span>Deal health</span><span class="hp '+dhp+'">'+dh+'</span></div>'+
+      '<div class="sr"><span>ARPU health</span><span class="hp '+ahp+'">'+ah+'</span></div>'+
+      '<div class="sr"><span>Approval required</span><span class="hp '+apvp+'">'+apv+'</span></div>'+
+      '<div class="sr"><span>Breakeven</span><span style="color:'+(beMonths<=12?'#0d5c2a':beMonths<=36?'#7a5400':'#9a3800')+'">'+beMonths.toFixed(1)+' months</span></div>'+
+      '<div class="sr"><span>Adj ARPU vs $'+THRESH+' threshold</span><span class="hp '+(adjARPU>=THRESH?'hpg':adjARPU>=FLOOR?'hpy':'hpr')+'">$'+adjARPU.toFixed(2)+'/line</span></div>'+
+      '<div class="sr"><span>Acq. value ('+dur+'mo)</span><span>$'+acqVal.toLocaleString()+'</span></div>'+
+      '<div class="sr"><span>Annual margin est.</span><span>$'+Math.round(annMar).toLocaleString()+'</span></div>'+
+    '</div>'+
+    '<div class="card"><div class="card-title">MRC by product</div>'+
+      (v.lines>0?'<div class="sr"><span>Voice ('+v.lines+' lines'+(freeLines>0&&freeMRC>0?' -- '+freeLines+' free':'')+')'+
+        '</span><span>$'+v.mrc+'/mo &middot; $'+(v.mrc/v.lines).toFixed(2)+'/line</span></div>':'')+
+      (h.lines>0?'<div class="sr"><span>HSI / Biz Internet ('+h.lines+')</span><span>$'+h.mrc+'/mo &middot; $'+(h.mrc/h.lines).toFixed(2)+'/line</span></div>':'')+
+      (t.lines>0?'<div class="sr"><span>Tablet / MINT ('+t.lines+')</span><span>$'+t.mrc+'/mo &middot; $'+(t.mrc/t.lines).toFixed(2)+'/line</span></div>':'')+
+      (s.lines>0?'<div class="sr"><span>Subsidy Voice ('+s.lines+')</span><span>$'+s.mrc+'/mo &middot; $'+(s.mrc/s.lines).toFixed(2)+'/line</span></div>':'')+
+      (freeDisc>0?'<div class="sr" style="color:#0d5c2a"><span>Free line promo ('+freeLines+' lines @ $'+freeMRC+')</span><span>-$'+freeDisc.toFixed(2)+'/mo</span></div>':'')+
+      '<div class="sr" style="font-weight:700;border-top:1px solid #e5e5ea;margin-top:4px;padding-top:8px"><span>Effective MRC to customer</span><span>$'+effectiveMRC.toFixed(2)+'/mo</span></div>'+
+    '</div>'+
+    (arpuTip?'<div class="card"><div class="card-title">ARPU guidance</div>'+arpuTip+'</div>':'')+
+    '<div class="card">'+
+      '<div class="card-title">Duration Credit Outlook &mdash; '+freq+' &middot; '+dur+' months</div>'+
+      '<div class="sr" style="margin-bottom:6px"><span>Total CC</span><span style="font-weight:700">$'+totalCC.toLocaleString()+'</span></div>'+
+      '<div class="sr" style="margin-bottom:10px"><span>Per installment</span><span>$'+instAmt.toFixed(2)+' &times; '+numI+'</span></div>'+
+      (tlHTML||'<div style="font-size:13px;color:#8e8e93;padding:10px 0">No credits entered</div>')+
+    '</div>'+
+    '<div class="card"><div class="card-title">Approval check</div>'+
+      '<div class="alert '+(totalCC<=smLimit?'ag':totalCC<=dirLimit?'ay':'ar')+'">'+
+        (totalCC<=smLimit?'Within Sr Manager authority ($'+Math.round(totalCC)+' of $'+smLimit+')':
+         totalCC<=dirLimit?'Director approval required ($'+Math.round(totalCC)+')':
+         totalCC<=vpLimit?'VP / Biz Mgmt required ($'+Math.round(totalCC)+')':'Exceeds VP limit -- escalation required')+
+      '</div>'+
+      '<div class="alert ab">Adj ARPU = ($'+totalMRC+' MRC &minus; $'+totalCC+' CC &divide; '+dur+'mo) &divide; '+totalLines+' lines = <b>$'+adjARPU.toFixed(2)+'</b>. Threshold: $'+THRESH+'.</div>'+
+    '</div>';
+
+  document.querySelectorAll('.dpanel').forEach(function(el){el.classList.remove('on');});
+  document.querySelectorAll('#sub-tabs .stab').forEach(function(el){el.classList.remove('on');});
+  document.getElementById('dh-health').classList.add('on');
+  document.querySelector('[data-p="dh-health"]').classList.add('on');
+  window.scrollTo(0,0);
+  showToast('✓ Deal health calculated!');
+}
+
+function calcStrategy() {
+  var len    = parseInt(document.getElementById('d-pkglen').value);
+  var churn  = document.getElementById('d-churn').value;
+  var pay    = document.getElementById('d-pay').value;
+  var sat    = parseInt(document.getElementById('d-nps').value);
+  var upsell = document.getElementById('d-upsell').value;
+  var isHC   = churn.indexOf('High')>-1||churn.indexOf('Critical')>-1;
+  var isPP   = pay.indexOf('Poor')>-1||pay.indexOf('Fair')>-1;
+  var isPro  = sat>=9;
+  var isDet  = sat<=6;
+
+  var alts = [];
+  if(isHC)  alts.push({c:'ar',m:'High churn risk -- prioritize retention credits and schedule month 2 check-in before renewal starts.'});
+  if(isPP)  alts.push({c:'ay',m:'Payment concern -- consider shorter credit duration or AutoPay enrollment requirement.'});
+  if(isDet) alts.push({c:'ay',m:'Detractor NPS -- focus first 30 days on flawless onboarding and proactive support.'});
+  if(isPro) alts.push({c:'ag',m:'Promoter customer -- great referral program opportunity at month 3.'});
+  if(upsell!=='None identified') alts.push({c:'ab',m:'Upsell opportunity: '+upsell+'. Introduce at month 4 after trust is built.'});
+
+  var acts = [
+    'Onboarding call + welcome. Confirm all lines active, billing on AutoPay. Set expectations for first invoice.',
+    isHC?'Retention check-in -- reinforce value delivered. Address any service quality issues before they escalate.':'First satisfaction check. Confirm service quality. Answer questions.',
+    isPro?'Referral conversation + NPS check. Begin planting seed for upsell.':'Mid-package review. Compare vs previous carrier spend. Reinforce savings.',
+    upsell!=='None identified'?'Introduce upsell: '+upsell.split('--')[0].trim()+'. Soft pitch -- data and ROI focused.':'Competitive benchmarking. Show 6-month savings summary.',
+    'Early renewal conversation. Preview upcoming promos. Get verbal commitment to continue.',
+    isHC?'Retention credit offer. Present loyalty deal. Lock in next cycle commitment.':'Present renewal package. Summarize credits received. Confirm continuation.',
+    len>=7?'Final renewal close. Paperwork and signatures. Schedule next-cycle planning call.':null
+  ].filter(Boolean);
+
+  var colors=['#534AB7','#185FA5','#0F6E56','#3B6D11','#854F0B','#993556','#3C3489'];
+  var tlHTML = acts.slice(0,len).map(function(a,i){
+    return '<div class="tl-r"><div style="background:'+colors[i]+';color:#fff;border-radius:8px;padding:5px 3px;text-align:center;font-size:9px;font-weight:700">Month '+(i+1)+'</div><div style="font-size:12px;color:#f5f5f7;line-height:1.5;padding-top:3px">'+a+'</div></div>';
+  }).join('');
+
+  document.getElementById('d-strat-out').innerHTML =
+    '<div class="card"><div class="card-title">Risk &amp; opportunity flags</div>'+
+      (alts.map(function(a){ return '<div class="alert '+a.c+'">'+a.m+'</div>'; }).join('')||'<div class="alert ag">No major risk flags detected.</div>')+
+    '</div>'+
+    '<div class="card"><div class="card-title">'+len+'-month action plan</div>'+tlHTML+'</div>'+
+    '<div class="card"><div class="card-title">Package summary</div>'+
+      '<div class="sr"><span>Package length</span><span>'+len+' months</span></div>'+
+      '<div class="sr"><span>Churn risk</span><span class="hp '+(isHC?'hpr':'hpg')+'">'+churn.split('--')[0].trim()+'</span></div>'+
+      '<div class="sr"><span>Payment risk</span><span class="hp '+(isPP?'hpy':'hpg')+'">'+(isPP?'Monitor closely':'Standard')+'</span></div>'+
+      '<div class="sr"><span>NPS</span><span class="hp '+(isPro?'hpg':isDet?'hpr':'hpy')+'">'+(isPro?'Promoter':isDet?'Detractor':'Passive')+' ('+sat+')</span></div>'+
+      '<div class="sr"><span>Credit structure</span><span style="font-size:12px;text-align:right;max-width:55%">'+(isPP?'Shorter term + AutoPay':isHC?'Front-load value':'Standard spread')+'</span></div>'+
+    '</div>';
+}
+
+// PHASE 5: Deal Templates
+function saveTemplate(){
+  var name = prompt('Template name (e.g., "3-line ProMobile + HSI"):');
+  if(!name) return;
+
+  var grp = function(sel,mC,lC,cC){
+    var blocks=[];
+    document.querySelectorAll(sel).forEach(function(b){
+      blocks.push({
+        mrc: parseFloat(b.querySelector('.'+mC).value)||0,
+        lines: parseInt(b.querySelector('.'+lC).value)||1,
+        cc: parseFloat(b.querySelector('.'+cC).value)||0
+      });
+    });
+    return blocks;
+  };
+
+  var template = {
+    name: name,
+    date: new Date().toLocaleDateString(),
+    voice: grp('.voice-blk','vMRC','vLines','vCC'),
+    hsi: grp('.hsi-blk','hMRC','hLines','hCC'),
+    tablet: grp('.tablet-blk','tMRC','tLines','tAC'),
+    subsidy: grp('.subsidy-blk','sMRC','sLines','sCC')
+  };
+
+  var templates = JSON.parse(localStorage.getItem('dhp_templates')||'[]');
+  templates.push(template);
+  localStorage.setItem('dhp_templates', JSON.stringify(templates));
+  loadTemplates();
+  showToast('✓ Template saved: '+name);
+}
+
+function loadTemplates(){
+  var templates = JSON.parse(localStorage.getItem('dhp_templates')||'[]');
+  var sel = document.getElementById('template-load');
+  sel.innerHTML = '<option value="">Load saved template...</option>';
+  templates.forEach(function(t,i){
+    var opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = t.name+' ('+t.date+')';
+    sel.appendChild(opt);
+  });
+}
+
+function loadTemplate(e){
+  var idx = parseInt(e.target.value);
+  if(isNaN(idx)) return;
+
+  var templates = JSON.parse(localStorage.getItem('dhp_templates')||'[]');
+  var t = templates[idx];
+  if(!t) return;
+
+  // Clear existing blocks
+  document.getElementById('d-voice-blocks').innerHTML = '';
+  document.getElementById('d-hsi-blocks').innerHTML = '';
+  document.getElementById('d-tablet-blocks').innerHTML = '';
+  document.getElementById('d-subsidy-blocks').innerHTML = '';
+
+  // Load voice blocks
+  t.voice.forEach(function(v){ addDHBlock('voice').then(function(){
+    document.querySelectorAll('.voice-blk').forEach(function(b,i){ if(i===t.voice.indexOf(v)){ b.querySelector('.vMRC').value=v.mrc; b.querySelector('.vLines').value=v.lines; b.querySelector('.vCC').value=v.cc; }});
+  }); });
+
+  t.hsi.forEach(function(h){ addDHBlock('hsi').then(function(){
+    document.querySelectorAll('.hsi-blk').forEach(function(b,i){ if(i===t.hsi.indexOf(h)){ b.querySelector('.hMRC').value=h.mrc; b.querySelector('.hLines').value=h.lines; b.querySelector('.hCC').value=h.cc; }});
+  }); });
+
+  t.tablet.forEach(function(tab){ addDHBlock('tablet').then(function(){
+    document.querySelectorAll('.tablet-blk').forEach(function(b,i){ if(i===t.tablet.indexOf(tab)){ b.querySelector('.tMRC').value=tab.mrc; b.querySelector('.tLines').value=tab.lines; b.querySelector('.tAC').value=tab.cc; }});
+  }); });
+
+  t.subsidy.forEach(function(s){ addDHBlock('subsidy').then(function(){
+    document.querySelectorAll('.subsidy-blk').forEach(function(b,i){ if(i===t.subsidy.indexOf(s)){ b.querySelector('.sMRC').value=s.mrc; b.querySelector('.sLines').value=s.lines; b.querySelector('.sCC').value=s.cc; }});
+  }); });
+
+  document.getElementById('template-load').value = '';
+  updateDealHealthLive();
+  showToast('✓ Template loaded!');
+}
+
+function calcGrowth() {
+  var mrc=parseFloat(document.getElementById('g-mrc').value)||0;
+  var lines=parseInt(document.getElementById('g-lines').value)||0;
+  var goal=document.getElementById('g-goal').value;
+  var out=document.getElementById('grow-out');
+  if(!mrc||!lines){out.innerHTML='<div class="alert ay">Enter current MRC and line count first.</div>';return;}
+  var curARPU=mrc/lines;
+  var result='';
+  if(goal==='arpu'){
+    var need=24*lines;
+    var gap=need-mrc;
+    if(gap<=0){result='<div class="alert ag">Already at $'+curARPU.toFixed(2)+'/line -- above $24 threshold.</div>';}
+    else{
+      result='<div class="alert ay">Need $'+gap+' more MRC/mo to hit $24 adj ARPU.</div>'+
+        '<div class="blk"><div class="sr"><span>Upgrade plans by</span><span><b>$'+Math.ceil(gap/lines)+'/line</b></span></div>'+
+        '<div class="sr"><span>Add BI at $70 (1 line)</span><span><b>New ARPU: $'+((mrc+70)/(lines+1)).toFixed(2)+'</b></span></div>'+
+        '<div class="sr"><span>Add voice lines at $40</span><span><b>Need '+Math.ceil(gap/40)+' lines</b></span></div></div>';
+    }
+  } else if(goal==='hsi'){
+    result='<div class="blk">'+
+      '<div class="sr"><span>$60 BI Unl BYOD</span><span>ARPU -> $'+((mrc+60)/(lines+1)).toFixed(2)+'</span></div>'+
+      '<div class="sr"><span>$70 BI Unl w/Gateway</span><span>ARPU -> $'+((mrc+70)/(lines+1)).toFixed(2)+'</span></div>'+
+      '<div class="sr"><span>$90 BI w/Install</span><span>ARPU -> $'+((mrc+90)/(lines+1)).toFixed(2)+'</span></div>'+
+      '</div><div class="alert ab">HSI is 90% margin. Best product to add for deal health.</div>';
+  } else if(goal==='upgrade'){
+    result='<div class="blk">'+
+      '<div class="sr"><span>Core->Pro (+$15/line)</span><span>+$'+(15*lines)+'/mo . ARPU $'+((mrc+15*lines)/lines).toFixed(2)+'</span></div>'+
+      '<div class="sr"><span>Pro->Super (+$10/line)</span><span>+$'+(10*lines)+'/mo . ARPU $'+((mrc+10*lines)/lines).toFixed(2)+'</span></div>'+
+      '<div class="sr"><span>Pro->Exp More (+$5/line)</span><span>+$'+(5*lines)+'/mo . ARPU $'+((mrc+5*lines)/lines).toFixed(2)+'</span></div>'+
+      '</div>';
+  } else if(goal==='tablet'){
+    result='<div class="blk">'+
+      '<div class="sr"><span>Tablet Unl $25</span><span>ARPU -> $'+((mrc+25)/(lines+1)).toFixed(2)+'</span></div>'+
+      '<div class="sr"><span>Tablet Unl Plus $30</span><span>ARPU -> $'+((mrc+30)/(lines+1)).toFixed(2)+'</span></div>'+
+      '<div class="sr"><span>Apple Watch $15</span><span>ARPU -> $'+((mrc+15)/(lines+1)).toFixed(2)+'</span></div>'+
+      '</div><div class="alert ab">Add 2+ tablet lines for meaningful ARPU impact.</div>';
+  } else {
+    result='<div class="blk">'+
+      [1,2,3,5].map(function(n){return '<div class="sr"><span>+'+n+' voice line'+(n>1?'s':'')+' @$40</span><span>'+( lines+n)+' lines . ARPU $'+((mrc+n*40)/(lines+n)).toFixed(2)+'</span></div>';}).join('')+
+      '</div>';
+  }
+  out.innerHTML=result;
+}
+
+// iOS SHARE / COPY
+function iosShare(text, title, cb) {
+  if(navigator.share) {
+    navigator.share({title:title||'Deal Health Pro',text:text})
+      .then(function(){if(cb)cb();})
+      .catch(function(e){if(e.name!=='AbortError')fallbackCopy(text,cb);});
+  } else { fallbackCopy(text,cb); }
+}
+function fallbackCopy(text, cb) {
+  var ta=document.createElement('textarea');
+  ta.value=text;
+  ta.style.cssText='position:fixed;top:-9999px;left:-9999px;font-size:16px';
+  document.body.appendChild(ta);
+  ta.focus();ta.select();
+  try{document.execCommand('copy');if(cb)cb();else alert('Copied!');}
+  catch(e){prompt('Copy this:',text);}
+  document.body.removeChild(ta);
+}
+
+// PROMOS DATA (Original, preserved)
+var PROMOS = [
+  // PORT-IN CREDITS
+  {id:27982, cat:'port', name:'$600 Port-In Credit -- SuperMobile', plans:'SuperMobile, Ult+ only', payout:'$600 over 20 months (bill credit)', req:'Port-in + BYOD or FRP only. No device promos stack.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Best for high-line Super deals. $30/mo credit per line.'},
+  {id:27981, cat:'port', name:'$300 Port-In Credit -- ProMobile', plans:'ProMobile', payout:'$300 over 20 months (bill credit)', req:'Port-in + BYOD or FRP. No device promos stack.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Stack with 4/$100 promo plan.'},
+  {id:27980, cat:'port', name:'$300 Port-In Credit -- ProMobile + Device Promo', plans:'ProMobile, Ult+', payout:'$300 one-time after 60-day hold', req:'Port-in + EIP device purchase required. Stacks with device promos.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Only port-in that stacks with device promos.'},
+  {id:null,  cat:'port', name:'BreakFree -- ETF Reimbursement', plans:'All plans', payout:'$800/line (lines 1-25), $100/line (26+)', req:'Port-in + new device on EIP at FRP. Stacks with BreakFree.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Huge for large accounts. Covers ETFs for lines 1-25.'},
+  {id:12517, cat:'port', name:'Keep & Switch -- BYOD $800', plans:'All plans', payout:'Up to $800 virtual prepaid Mastercard', req:'BYOD switch. Max 4 per redemption, 12 total per BAN.', taxidOnly:false, ssn:true, taxid:true, limit:'4 per redemption / 12 per BAN', tip:'SSN gets virtual card. Tax ID gets same. Max 12 total.'},
+  {id:24661, cat:'port', name:'Family Freedom -- Up to $800/line', plans:'All plans', payout:'Up to $800/line virtual prepaid Mastercard', req:'Port-in + trade-in + EIP device. Max 4 per BAN.', taxidOnly:false, ssn:true, taxid:true, limit:'4 per BAN', tip:'Stacks with device promos on same BAN, not same line.'},
+  {id:12497, cat:'port', name:'Internet Contract Freedom -- $750 ETF', plans:'BI / SBI lines', payout:'SSN: Virtual Prepaid Mastercard | Tax ID: Physical Prepaid Mastercard', req:'New BI line activation. Covers internet ETF only.', taxidOnly:false, ssn:true, taxid:true, limit:'1 BI per address / 5 per BAN', tip:'[*] Tax ID gets PHYSICAL card -- faster. SSN gets virtual.'},
+  // SERVICE PROMOS
+  {id:27979, cat:'service', name:'$1,000 Activation Credit -- SuperMobile (20+ lines)', plans:'SuperMobile', payout:'$1,000/line bill credit over 36 months', req:'NEW accounts only. 20 voice line minimum. BYOD or FRP.', taxidOnly:false, ssn:true, taxid:true, limit:'20 line min', tip:'New BAN required. Existing BI/IoT customers must open new BAN.'},
+  {id:27971, cat:'service', name:'$500 Activation Credit -- CoreMobile (25+ lines)', plans:'CoreMobile, ProMobile, Ult+', payout:'$500/line bill credit over 36 months', req:'New accounts. 25 voice line minimum.', taxidOnly:false, ssn:true, taxid:true, limit:'25 line min', tip:'Great for large new logos. New BAN required.'},
+  {id:28138, cat:'service', name:'$100 Activation Credit -- New Tablet (Tax ID only)', plans:'Any tablet plan', payout:'$100 one-time bill credit', req:'Tax ID customers ONLY. New tablet line with BYOD.', taxidOnly:true, ssn:false, taxid:true, limit:'N/A', tip:'[*] TAX ID ONLY. Easy add-on for tablet deals.'},
+  {id:28923, cat:'service', name:'$150 Activation Credit -- 10 for $200 Plan (Tax ID only)', plans:'CoreMobile 10 for $200 promo plan', payout:'$150/line one-time bill credit', req:'Tax ID customers ONLY. 10 line minimum.', taxidOnly:true, ssn:false, taxid:true, limit:'10 line min', tip:'[*] TAX ID ONLY. Stacks perfectly with 10 for $200 plan.'},
+  {id:26892, cat:'service', name:'CoreMobile 10 Lines for $150 Promo Plan', plans:'CoreMobile promo', payout:'Discounted rate plan -- 10 lines for $150', req:'New accounts only. Existing voice customers not eligible.', taxidOnly:false, ssn:true, taxid:true, limit:'10 line min', tip:'$15/line effective. Only for brand new accounts -- no existing voice lines.'},
+  {id:28922, cat:'service', name:'CoreMobile 20 Lines for $200 Promo Plan', plans:'CoreMobile promo', payout:'Discounted rate plan -- 20 lines for $200', req:'New accounts only. Existing voice customers not eligible.', taxidOnly:false, ssn:true, taxid:true, limit:'10 line min', tip:'$10/line effective. New BAN required. Huge for maximizing line count.'},
+  {id:27666, cat:'service', name:'$100 Credit -- New BI Line + Voice Port', plans:'All voice plans + BI', payout:'$100 via 12 monthly bill credits', req:'New BI line + port-in a voice line. 13 voice line min.', taxidOnly:false, ssn:true, taxid:true, limit:'13 voice line min', tip:'Stack this with HSI deals when porting voice.'},
+  {id:28242, cat:'service', name:'$15 Off BI Line -- Voice Bundle', plans:'BI + any voice plan', payout:'$15/month off BI line', req:'Must have 1+ paid voice line on account.', taxidOnly:false, ssn:true, taxid:true, limit:'20 per BAN', tip:'Easy add-on. No port required. Just need active voice line.'},
+  {id:28243, cat:'service', name:'$5 Off New BI Line', plans:'BI', payout:'$5/month off per BI line', req:'Activate 1+ new BI lines.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Stacks with $15 voice bundle? Check C2 for stacking rules.'},
+  {id:17629, cat:'service', name:'4 for $100 -- Bus Unlimited Select', plans:'Business Unlimited Select', payout:'Discounted rate plan -- 4 lines for $100', req:'Up to 6 lines total (lines 5-6 at AAL rate).', taxidOnly:false, ssn:true, taxid:true, limit:'6 lines max', tip:'$25/line effective. Perfect small business package.'},
+  {id:28761, cat:'service', name:'BOGO AAL -- Free Line', plans:'ProMobile, Super/Ult+, Exp More/Go5G+', payout:'1 free line bill credit', req:'Activate 3 new lines on new account OR add 2 lines to 1-line account.', taxidOnly:false, ssn:true, taxid:true, limit:'1 per account / 12 line BAN max', tip:'Your free line strategy. Add 2, get 1 free.'},
+  {id:28133, cat:'service', name:'3rd Line Free', plans:'CoreMobile, ProMobile, Super/Ult+, Exp More/Go5G+', payout:'1 free line bill credit', req:'New account with 3 voice lines on qualifying plan.', taxidOnly:false, ssn:true, taxid:true, limit:'1 per account / 12 line BAN max', tip:'New accounts only. Perfect for small 3-line deals.'},
+  // DEVICE PROMOS
+  {id:27975, cat:'device', name:'$1,100 off iPhone w/Trade -- Super/Ult+', plans:'SuperMobile, Ult+', payout:'FMV + recurring device credits', req:'Trade-in + EIP required.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Best iPhone deal. Requires Super plan.'},
+  {id:27976, cat:'device', name:'$830 off iPhone w/Trade -- Pro/Super', plans:'ProMobile, Super/Ult+, 4/$100', payout:'FMV + recurring device credits', req:'Trade-in + EIP required.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Also works with 4/$100 plan. Versatile.'},
+  {id:28658, cat:'device', name:'$830 off iPhone (no trade) -- Super', plans:'SuperMobile, Ult+', payout:'Recurring device credits', req:'EIP + BreakFree eligible. No trade needed.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'No trade needed. Stack with BreakFree.'},
+  {id:25394, cat:'device', name:'iPhone 16e / 17e On Us -- Pro+', plans:'ProMobile, Super/Ult+, 4/$100', payout:'Recurring device credits', req:'New/AAL + EIP.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Free phone. Works with 4/$100. Great for entry deals.'},
+  {id:28929, cat:'device', name:'$1,100 off Android w/Trade -- Super', plans:'SuperMobile, Ult+', payout:'FMV + recurring device credits', req:'Trade + EIP. Galaxy S26, S25, Z series, Pixel 10.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'New S26 included. Best Samsung deal.'},
+  {id:28446, cat:'device', name:'$1,100 off Android w/Trade -- Pro+', plans:'ProMobile, Super/Ult+, 4/$100', payout:'FMV + recurring device credits', req:'Trade + EIP. Galaxy S25 series, S26, Z series.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Also works with 4/$100 plan.'},
+  {id:27977, cat:'device', name:'$630 off iPhone w/Trade -- CoreMobile', plans:'CoreMobile, ProMobile, 4/$100', payout:'FMV + recurring device credits', req:'Trade + EIP.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Best deal for Core plan customers.'},
+  {id:27978, cat:'device', name:'Affordable Phones On Us -- CoreMobile', plans:'CoreMobile, ProMobile, 4/$100', payout:'Recurring device credits (phone free)', req:'New/AAL + EIP. Galaxy A16/A17, Revvl 8, TCL Flip 4, Moto g.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Easy close for price-sensitive customers.'},
+  // TABLET / MI
+  {id:28102, cat:'tablet', name:'Samsung Tab A11+ or A9+ On Us', plans:'Tablet Unlimited ($15 promo also eligible)', payout:'Recurring device credits', req:'New/AAL + EIP.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Add tablets to voice deals to boost line count and ARPU.'},
+  {id:28093, cat:'tablet', name:'iPad (A16) for $199', plans:'Business Tablet Unlimited', payout:'Recurring device credits', req:'New/AAL + EIP.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Stack with voice deal. $25 tablet plan.'},
+  {id:28266, cat:'tablet', name:'iPad (A16) for $99', plans:'Business Tablet Unlimited Plus', payout:'Recurring device credits', req:'New/AAL + EIP.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Cheaper iPad with Plus plan ($30).'},
+  {id:28096, cat:'tablet', name:'iPad mini (A17 Pro) for $199', plans:'Business Tablet Unlimited Plus', payout:'Recurring device credits', req:'New/AAL + EIP.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Premium tablet option.'},
+  {id:17516, cat:'tablet', name:'$15 Unlimited Tablet Plan', plans:'Tablet only', payout:'Discounted rate plan', req:'Any tablet. New/AAL.', taxidOnly:false, ssn:true, taxid:true, limit:'N/A', tip:'Best tablet plan for volume. Stack as many as ARPU allows.'},
+  {id:25390, cat:'tablet', name:'BTS BOGOHO -- 50% off 2nd BTS Line', plans:'MI, Tablet, Wearable', payout:'Monthly bill credits -- 50% off 2nd line', req:'Activate 2+ new BTS lines (mix and match).', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Mix tablets + watches + hotspots. Great for boosting BTS line count.'},
+  // IoT
+  {id:19451, cat:'iot', name:'Geotab GO9 Fleet Tracker On Us', plans:'Geotab plan', payout:'Recurring device credits', req:'New/AAL + EIP.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Fleet tracking upsell. Great for transport/delivery businesses.'},
+  {id:18914, cat:'iot', name:'SyncUP Drive On Us', plans:'SyncUP 2GB+', payout:'Recurring device credits', req:'New/AAL + EIP.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Vehicle tracking. Easy add-on for fleet customers.'},
+  {id:28430, cat:'iot', name:'$300 off Apple Watch SE3 / SE2', plans:'Apple Watch Plus', payout:'Recurring device credits', req:'New/AAL + EIP.', taxidOnly:false, ssn:true, taxid:true, limit:'No limit', tip:'Staff productivity pitch. Pair with voice bundle.'},
+  // SUBSIDY (Tax ID / ENT only)
+  {id:27291, cat:'subsidy', name:'$35 Subsidy Plan -- $800 credit (36mo)', plans:'Enterprise Unlimited $35 Subsidy', payout:'$800 device credit (36mo) or $600 (24mo)', req:'Enterprise/ENT accounts. Samsung S-series, Google Pixel.', taxidOnly:true, ssn:false, taxid:true, limit:'No limit', tip:'[*] TAX ID / ENT ONLY. Maximizes device credit for premium phones.'},
+  {id:23709, cat:'subsidy', name:'$45 Subsidy Plan -- $1,300 credit (36mo)', plans:'Enterprise Unlimited $45 Subsidy', payout:'$1,300 device credit (36mo) or $1,000 (30mo)', req:'Enterprise/ENT accounts. Premium Samsung/Google only.', taxidOnly:true, ssn:false, taxid:true, limit:'No limit', tip:'[*] TAX ID / ENT ONLY. Best device credit available. S26 Ultra, Z Fold7.'},
+  {id:27288, cat:'subsidy', name:'$25 Subsidy Plan -- $430 credit (36mo)', plans:'Enterprise Unlimited $25 Subsidy', payout:'$430 subsidy + $170 NSS price override', req:'Enterprise/ENT accounts.', taxidOnly:true, ssn:false, taxid:true, limit:'No limit', tip:'[*] TAX ID / ENT ONLY. Entry subsidy option.'},
+];
+
+var promoAcctFilter = 'ssn';
+var promoCatFilter  = 'all';
+
+function filterPromos(type) {
+  promoAcctFilter = type;
+  document.querySelectorAll('#s-promos .fp[id^="p-"]').forEach(function(b){ b.classList.remove('on'); });
+  document.getElementById('p-'+type).classList.add('on');
+  renderPromos();
+}
+
+function filterPromoCat(btn, cat) {
+  promoCatFilter = cat;
+  document.querySelectorAll('#promo-cat-row .fp').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  renderPromos();
+}
+
+function renderPromos() {
+  var acctType = document.getElementById('d-accttype') ? document.getElementById('d-accttype').value : 'ssn';
+  var filter   = promoAcctFilter;
+
+  var list = PROMOS.filter(function(p){
+    var acctOk = filter==='all' ? true : filter==='taxid' ? p.taxid : p.ssn;
+    var catOk  = promoCatFilter==='all' || p.cat===promoCatFilter;
+    return acctOk && catOk;
+  });
+
+  var container = document.getElementById('promo-list');
+  if(!list.length){
+    container.innerHTML='<div style="text-align:center;padding:40px;color:#8e8e93;font-size:14px">No promos match this filter.</div>';
+    return;
+  }
+
+  var catColors = {port:'#dce8fd',service:'#d1f0d9',device:'#fde8d3',tablet:'#fce4f3',iot:'#fff3cc',subsidy:'#ede7f6'};
+  var catText   = {port:'#1a3a8f',service:'#0d5c2a',device:'#9a3800',tablet:'#8b1a5e',iot:'#7a5400',subsidy:'#4527a0'};
+  var catLabel  = {port:'Port-In',service:'Service',device:'Device',tablet:'Tablet/MI',iot:'IoT',subsidy:'Subsidy [*]'};
+
+  container.innerHTML = list.map(function(p){
+    var taxBadge = p.taxidOnly ? '<span style="background:#ede7f6;color:#4527a0;font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;margin-left:6px">TAX ID ONLY</span>' : '';
+    var ssnBadge = !p.ssn ? '<span style="background:#fde8d3;color:#9a3800;font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;margin-left:4px">NOT FOR SSN</span>' : '';
+    return '<div style="background:#1c1c1e;border-radius:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden">'+
+      '<div style="padding:12px 14px;cursor:pointer;border-bottom:none" onclick="togglePromo(this)">'+
+        '<div style="display:flex;align-items:flex-start;gap:8px;justify-content:space-between">'+
+          '<div style="flex:1">'+
+            '<div style="font-size:14px;font-weight:700;line-height:1.3;color:#f5f5f7">'+p.name+taxBadge+ssnBadge+'</div>'+
+            '<div style="font-size:12px;color:#98989d;margin-top:3px">'+p.payout+'</div>'+
+          '</div>'+
+          '<span style="background:'+catColors[p.cat]+';color:'+catText[p.cat]+';font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px;flex-shrink:0">'+catLabel[p.cat]+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div style="display:none;border-top:1px solid #2c2c2e;padding:12px 14px;background:#1c1c1e">'+
+        '<div style="font-size:12px;color:#98989d;margin-bottom:3px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Eligible plans</div>'+
+        '<div style="font-size:13px;color:#f5f5f7;margin-bottom:10px">'+p.plans+'</div>'+
+        '<div style="font-size:12px;color:#98989d;margin-bottom:3px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Requirements</div>'+
+        '<div style="font-size:13px;color:#f5f5f7;margin-bottom:10px">'+p.req+'</div>'+
+        (p.limit&&p.limit!=='N/A'?'<div style="font-size:12px;color:#98989d;margin-bottom:3px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Limit</div><div style="font-size:13px;color:#f5f5f7;margin-bottom:10px">'+p.limit+'</div>':'')+
+        '<div style="background:#f9f0f5;border-radius:8px;padding:10px;font-size:13px;color:#f5f5f7;border-left:3px solid #E20074">'+
+          '[!] '+p.tip+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function togglePromo(el) {
+  var body = el.nextElementSibling;
+  body.style.display = body.style.display === 'block' ? 'none' : 'block';
+}
+</script>
+</body>
+</html>
