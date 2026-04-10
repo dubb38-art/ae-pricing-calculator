@@ -94,6 +94,7 @@ html,body{background:#0a0a0a;color:#f5f5f7;font-family:-apple-system,BlinkMacSys
   <button class="ptab" onclick="switchPlan('super')">🔥 SuperMobile</button>
   <button class="ptab" onclick="switchPlan('pro')">💪 ProMobile</button>
   <button class="ptab" onclick="switchPlan('core')">💡 CoreMobile</button>
+  <button class="ptab" onclick="switchPlan('hsi')">🏠 HSI</button>
   <button class="ptab" onclick="switchPlan('bundles')">📦 Bundle Scenarios</button>
 </div>
 
@@ -111,11 +112,31 @@ html,body{background:#0a0a0a;color:#f5f5f7;font-family:-apple-system,BlinkMacSys
           <option value="super">SuperMobile</option>
           <option value="pro">ProMobile</option>
           <option value="core">CoreMobile</option>
+          <option value="hsi">HSI</option>
         </select>
       </div>
       <div class="calc-input">
         <label>Number of Lines</label>
-        <input type="number" id="lineCount" value="5" min="1" max="100" onchange="updateQuote()" onkeyup="updateQuote()">
+        <select id="lineCount" onchange="updateQuote()">
+          <option value="1">1 line</option>
+          <option value="2">2 lines</option>
+          <option value="3">3 lines</option>
+          <option value="4">4 lines</option>
+          <option value="5" selected>5 lines</option>
+          <option value="6">6 lines</option>
+          <option value="7">7 lines</option>
+          <option value="8">8 lines</option>
+          <option value="9">9 lines</option>
+          <option value="10">10 lines</option>
+          <option value="11">11 lines</option>
+          <option value="12">12 lines</option>
+          <option value="13">13 lines</option>
+          <option value="14">14 lines</option>
+          <option value="15">15 lines</option>
+          <option value="20">20 lines</option>
+          <option value="25">25 lines</option>
+          <option value="30">30 lines</option>
+        </select>
       </div>
     </div>
     <div class="calc-row">
@@ -128,19 +149,52 @@ html,body{background:#0a0a0a;color:#f5f5f7;font-family:-apple-system,BlinkMacSys
       </div>
       <div class="calc-input">
         <label>Add Tablets</label>
-        <input type="number" id="tabletCount" value="0" min="0" max="50" onchange="updateQuote()" onkeyup="updateQuote()">
+        <select id="tabletCount" onchange="updateQuote()">
+          <option value="0">None</option>
+          <option value="1">1 tablet</option>
+          <option value="2">2 tablets</option>
+          <option value="3">3 tablets</option>
+          <option value="4">4 tablets</option>
+          <option value="5">5 tablets</option>
+          <option value="6">6 tablets</option>
+          <option value="7">7 tablets</option>
+          <option value="8">8 tablets</option>
+          <option value="9">9 tablets</option>
+          <option value="10">10 tablets</option>
+        </select>
+      </div>
+      <div class="calc-input">
+        <label>Add Wearables</label>
+        <select id="wearableCount" onchange="updateQuote()">
+          <option value="0">None</option>
+          <option value="1">1 wearable</option>
+          <option value="2">2 wearables</option>
+          <option value="3">3 wearables</option>
+          <option value="4">4 wearables</option>
+          <option value="5">5 wearables</option>
+          <option value="6">6 wearables</option>
+          <option value="7">7 wearables</option>
+          <option value="8">8 wearables</option>
+          <option value="9">9 wearables</option>
+          <option value="10">10 wearables</option>
+        </select>
       </div>
     </div>
   </div>
 
-  <div id="quoteResult" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+  <div id="quoteResult" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
     <div class="result-card">
-      <div class="result-label">Monthly Voice Cost</div>
+      <div class="result-label">Voice Cost</div>
       <div class="result-value" id="voiceCost">$0</div>
       <div class="result-sub" id="voiceSub"></div>
     </div>
     <div class="result-card">
-      <div class="result-label">With Tablets</div>
+      <div class="result-label">Add-ons (Tablets + Wearables)</div>
+      <div class="result-value" id="addonCost">$0</div>
+      <div class="result-sub" id="addonSub"></div>
+    </div>
+    <div class="result-card">
+      <div class="result-label">Total Monthly</div>
       <div class="result-value" id="totalCost">$0</div>
       <div class="result-sub" id="totalSub"></div>
     </div>
@@ -183,8 +237,8 @@ html,body{background:#0a0a0a;color:#f5f5f7;font-family:-apple-system,BlinkMacSys
     <div class="pthdr c3"><span>Lines</span><span>AutoPay</span><span>Regular</span></div>
     <div class="ptrow c3" style="background:rgba(251,191,36,.08)"><div class="pt-label">1</div><div class="pt-price" style="color:#fbbf24">$95</div><div class="pt-price">$100</div></div>
     <div class="ptrow c3" style="background:rgba(251,191,36,.08)"><div class="pt-label">2</div><div class="pt-price" style="color:#fbbf24">$160</div><div class="pt-price">$170</div></div>
-    <div class="ptrow c3 highlight"><div class="pt-label">3 (Free)</div><div class="pt-price" style="color:#4cd97b">$195</div><div class="pt-price">$210</div></div>
-    <div class="ptrow c3"><div class="pt-label">4</div><div class="pt-price">$230</div><div class="pt-price">$250</div></div>
+    <div class="ptrow c3 highlight"><div class="pt-label">3 (On Us)</div><div class="pt-price" style="color:#4cd97b">$160</div><div class="pt-price">$170</div></div>
+    <div class="ptrow c3"><div class="pt-label">4</div><div class="pt-price">$195</div><div class="pt-price">$210</div></div>
     <div class="ptrow c3"><div class="pt-label">5</div><div class="pt-price">$265</div><div class="pt-price">$290</div></div>
     <div class="ptrow c3"><div class="pt-label">6</div><div class="pt-price">$300</div><div class="pt-price">$300</div></div>
     <div class="ptrow c3"><div class="pt-label">7</div><div class="pt-price">$350</div><div class="pt-price">$350</div></div>
@@ -193,17 +247,27 @@ html,body{background:#0a0a0a;color:#f5f5f7;font-family:-apple-system,BlinkMacSys
   <div class="stitle">Lines 8–14+ Pricing</div>
   <div class="ptbl">
     <div class="pthdr c2"><span>Lines</span><span>Cost</span></div>
-    <div class="ptrow c2"><div class="pt-label">8</div><div class="pt-price">$400</div></div>
-    <div class="ptrow c2"><div class="pt-label">9</div><div class="pt-price">$450</div></div>
-    <div class="ptrow c2"><div class="pt-label">10</div><div class="pt-price">$500</div></div>
-    <div class="ptrow c2"><div class="pt-label">11</div><div class="pt-price">$550</div></div>
-    <div class="ptrow c2"><div class="pt-label">12</div><div class="pt-price">$600</div></div>
-    <div class="ptrow c2"><div class="pt-label">13</div><div class="pt-price">$650</div></div>
+    <div class="ptrow c2"><div class="pt-label">6</div><div class="pt-price">$265</div></div>
+    <div class="ptrow c2"><div class="pt-label">7</div><div class="pt-price">$300</div></div>
+    <div class="ptrow c2"><div class="pt-label">8</div><div class="pt-price">$350</div></div>
+    <div class="ptrow c2"><div class="pt-label">9</div><div class="pt-price">$400</div></div>
+    <div class="ptrow c2"><div class="pt-label">10</div><div class="pt-price">$450</div></div>
+    <div class="ptrow c2"><div class="pt-label">11</div><div class="pt-price">$500</div></div>
+    <div class="ptrow c2"><div class="pt-label">12</div><div class="pt-price">$550</div></div>
+    <div class="ptrow c2"><div class="pt-label">13</div><div class="pt-price">$600</div></div>
     <div class="ptrow c2"><div class="pt-label">14+</div><div class="pt-price">$50/line</div></div>
   </div>
 
   <div class="info-box warning">
     <strong>AutoPay Savings:</strong> AutoPay customers get $5–$20 off per plan tier (Lines 1–5). Significant savings for recurring billing.
+  </div>
+
+  <div class="stitle">3rd Line Breakdown (On Us)</div>
+  <div class="ptbl">
+    <div class="pthdr c2"><span>Configuration</span><span>Cost</span></div>
+    <div class="ptrow c2"><div class="pt-label">Lines 1–2 (AutoPay)</div><div class="pt-price">$160</div></div>
+    <div class="ptrow c2 highlight"><div class="pt-label">Line 3 (On Us — FREE)</div><div class="pt-price" style="color:#4cd97b">$0</div></div>
+    <div class="ptrow c2" style="border-top:2px solid #2c2c2e;font-weight:800"><div>Total (3 lines AutoPay)</div><div class="pt-price" style="color:#E20074">$160</div></div>
   </div>
 </div>
 
@@ -219,8 +283,8 @@ html,body{background:#0a0a0a;color:#f5f5f7;font-family:-apple-system,BlinkMacSys
     <div class="pthdr c3"><span>Lines</span><span>AutoPay</span><span>Regular</span></div>
     <div class="ptrow c3" style="background:rgba(255,107,179,.08)"><div class="pt-label">1</div><div class="pt-price" style="color:#ff6bb3">$80</div><div class="pt-price">$85</div></div>
     <div class="ptrow c3" style="background:rgba(255,107,179,.08)"><div class="pt-label">2</div><div class="pt-price" style="color:#ff6bb3">$140</div><div class="pt-price">$150</div></div>
-    <div class="ptrow c3 highlight"><div class="pt-label">3 (Free)</div><div class="pt-price" style="color:#4cd97b">$165</div><div class="pt-price">$180</div></div>
-    <div class="ptrow c3"><div class="pt-label">4</div><div class="pt-price">$190</div><div class="pt-price">$210</div></div>
+    <div class="ptrow c3 highlight"><div class="pt-label">3 (On Us)</div><div class="pt-price" style="color:#4cd97b">$140</div><div class="pt-price">$150</div></div>
+    <div class="ptrow c3"><div class="pt-label">4</div><div class="pt-price">$165</div><div class="pt-price">$180</div></div>
     <div class="ptrow c3"><div class="pt-label">5</div><div class="pt-price">$215</div><div class="pt-price">$240</div></div>
     <div class="ptrow c3"><div class="pt-label">6</div><div class="pt-price">$240</div><div class="pt-price">$240</div></div>
     <div class="ptrow c3"><div class="pt-label">7</div><div class="pt-price">$280</div><div class="pt-price">$280</div></div>
@@ -229,6 +293,8 @@ html,body{background:#0a0a0a;color:#f5f5f7;font-family:-apple-system,BlinkMacSys
   <div class="stitle">Lines 8–14+ Pricing</div>
   <div class="ptbl">
     <div class="pthdr c2"><span>Lines</span><span>Cost</span></div>
+    <div class="ptrow c2"><div class="pt-label">6</div><div class="pt-price">$240</div></div>
+    <div class="ptrow c2"><div class="pt-label">7</div><div class="pt-price">$280</div></div>
     <div class="ptrow c2"><div class="pt-label">8</div><div class="pt-price">$320</div></div>
     <div class="ptrow c2"><div class="pt-label">9</div><div class="pt-price">$360</div></div>
     <div class="ptrow c2"><div class="pt-label">10</div><div class="pt-price">$400</div></div>
@@ -239,7 +305,7 @@ html,body{background:#0a0a0a;color:#f5f5f7;font-family:-apple-system,BlinkMacSys
   </div>
 
   <div class="info-box info">
-    <strong>AE Pitch:</strong> Only $15/line more than CoreMobile, but 4x the data (200GB vs 50GB). 3rd line free makes 3 people for $165/month with AutoPay.
+    <strong>AE Pitch:</strong> Only $15/line more than CoreMobile, but 4x the data (200GB vs 50GB). 3rd line on us makes it the same as 2 lines.
   </div>
 </div>
 
@@ -255,8 +321,8 @@ html,body{background:#0a0a0a;color:#f5f5f7;font-family:-apple-system,BlinkMacSys
     <div class="pthdr c3"><span>Lines</span><span>AutoPay</span><span>Regular</span></div>
     <div class="ptrow c3" style="background:rgba(249,115,22,.08)"><div class="pt-label">1</div><div class="pt-price" style="color:#f97316">$60</div><div class="pt-price">$65</div></div>
     <div class="ptrow c3" style="background:rgba(249,115,22,.08)"><div class="pt-label">2</div><div class="pt-price" style="color:#f97316">$90</div><div class="pt-price">$100</div></div>
-    <div class="ptrow c3 highlight"><div class="pt-label">3 (Free)</div><div class="pt-price" style="color:#4cd97b">$105</div><div class="pt-price">$120</div></div>
-    <div class="ptrow c3"><div class="pt-label">4</div><div class="pt-price">$120</div><div class="pt-price">$140</div></div>
+    <div class="ptrow c3 highlight"><div class="pt-label">3 (On Us)</div><div class="pt-price" style="color:#4cd97b">$90</div><div class="pt-price">$100</div></div>
+    <div class="ptrow c3"><div class="pt-label">4</div><div class="pt-price">$105</div><div class="pt-price">$120</div></div>
     <div class="ptrow c3"><div class="pt-label">5</div><div class="pt-price">$135</div><div class="pt-price">$160</div></div>
     <div class="ptrow c3"><div class="pt-label">6</div><div class="pt-price">$150</div><div class="pt-price">$150</div></div>
     <div class="ptrow c3"><div class="pt-label">7</div><div class="pt-price">$175</div><div class="pt-price">$175</div></div>
@@ -279,15 +345,56 @@ html,body{background:#0a0a0a;color:#f5f5f7;font-family:-apple-system,BlinkMacSys
   </div>
 </div>
 
+<!-- HSI -->
+<div class="plan-sheet" id="plan-hsi">
+  <div style="background:linear-gradient(135deg,#0a2e14,#1c1c1e);border:1.5px solid #10b981;border-radius:10px;padding:14px;margin-bottom:14px">
+    <div style="font-size:24px;font-weight:900;color:#4cd97b;margin-bottom:6px">HSI (Home Service Internet)</div>
+    <div style="font-size:13px;color:#8e8e93;line-height:1.6">Fixed wireless home internet. Reliable, no data caps, perfect for home offices and primary connections.</div>
+  </div>
+
+  <div class="stitle">HSI Pricing Plans</div>
+  <div class="ptbl">
+    <div class="pthdr c2"><span>Plan</span><span>Monthly Cost</span></div>
+    <div class="ptrow c2" style="background:rgba(76,217,123,.08)"><div class="pt-label">Unlimited with Device</div><div class="pt-price" style="color:#4cd97b">$70</div></div>
+    <div class="ptrow c2" style="background:rgba(96,165,250,.08)"><div class="pt-label">Unlimited BYOD (SIM Only)</div><div class="pt-price" style="color:#60a5fa">$60</div></div>
+    <div class="ptrow c2"><div class="pt-label">Rely</div><div class="pt-price">$50</div></div>
+  </div>
+
+  <div class="stitle">HSI + Voice Bundle Discount</div>
+  <div class="info-box info">
+    <strong>Rely Plan Special:</strong> Get $15 off when bundled with qualifying voice plan. Rely becomes <strong>$35/month</strong> with voice discount.
+  </div>
+
+  <div class="ptbl">
+    <div class="pthdr c2"><span>Bundle Configuration</span><span>Cost</span></div>
+    <div class="ptrow c2"><div class="pt-label">Rely (Standalone)</div><div class="pt-price">$50</div></div>
+    <div class="ptrow c2 highlight"><div class="pt-label">Rely + Voice Bundle</div><div class="pt-price" style="color:#4cd97b">$35</div></div>
+    <div class="ptrow c2" style="margin-top:8px;border-top:1px solid #2c2c2e"><div class="pt-label">Unlimited with Device (Standalone)</div><div class="pt-price">$70</div></div>
+    <div class="ptrow c2" style="background:rgba(76,217,123,.08)"><div class="pt-label">Unlimited with Device + Voice</div><div class="pt-price" style="color:#4cd97b">$70</div><span style="font-size:9px;color:#4cd97b">No additional charge</span></div>
+  </div>
+
+  <div class="stitle">HSI Use Cases</div>
+  <div class="info-box success">
+    <strong>💡 Home Office Bundle:</strong> Unlimited HSI ($70) + ProMobile ($70/line, 2 lines) = $210/month for home internet + 2 people with business phones.
+  </div>
+  <div class="info-box success">
+    <strong>💡 Budget Home Internet:</strong> Rely with voice discount ($35) + CoreMobile ($60) = $95/month for home internet + business phone.
+  </div>
+
+</div>
+
 <!-- BUNDLES -->
 <div class="plan-sheet" id="plan-bundles">
-  <div class="stitle">Tablet Pricing (Add to Any Voice Plan)</div>
+  <div class="stitle">Tablet & Wearable Pricing (Add to Any Voice Plan)</div>
   <div class="ptbl">
     <div class="pthdr c2"><span>Configuration</span><span>Monthly Cost</span></div>
     <div class="ptrow c2" style="background:rgba(96,165,250,.08)"><div class="pt-label">Tablet Unlimited (Standalone)</div><div class="pt-price" style="color:#60a5fa">$65</div></div>
     <div class="ptrow c2 highlight"><div class="pt-label">Tablet with Voice Bundle</div><div class="pt-price" style="color:#4cd97b">$25</div></div>
     <div class="ptrow c2 highlight"><div class="pt-label">2nd Tablet (BOGOHO - 50%)</div><div class="pt-price" style="color:#4cd97b">$12.50</div></div>
     <div class="ptrow c2 highlight"><div class="pt-label">3rd+ Tablet (BOGOHO)</div><div class="pt-price" style="color:#4cd97b">$12.50 ea</div></div>
+    <div class="ptrow c2" style="border-top:2px solid #2c2c2e"></div>
+    <div class="ptrow c2" style="background:rgba(168,85,247,.08)"><div class="pt-label">Wearable (AutoPay)</div><div class="pt-price" style="color:#d8b4fe">$15</div></div>
+    <div class="ptrow c2" style="background:rgba(168,85,247,.08)"><div class="pt-label">Wearable (Regular)</div><div class="pt-price" style="color:#d8b4fe">$20</div></div>
   </div>
 
   <div class="stitle">Pre-Built Scenarios (AE Ready)</div>
@@ -296,42 +403,35 @@ html,body{background:#0a0a0a;color:#f5f5f7;font-family:-apple-system,BlinkMacSys
     <div style="font-weight:700;font-size:14px;margin-bottom:10px">📱 Small Team: 3 Voice (ProMobile) + 1 Tablet</div>
     <div class="ptbl">
       <div class="pthdr c2"><span>Item</span><span>Cost</span></div>
-      <div class="ptrow c2"><div>ProMobile Line 1</div><div class="pt-price">$80</div></div>
-      <div class="ptrow c2"><div>ProMobile Line 2</div><div class="pt-price">$80</div></div>
-      <div class="ptrow c2 highlight"><div>ProMobile Line 3 (FREE)</div><div class="pt-price" style="color:#4cd97b">$0</div></div>
+      <div class="ptrow c2"><div>ProMobile 3 Lines (w/ 3rd On Us)</div><div class="pt-price">$140</div></div>
       <div class="ptrow c2" style="background:rgba(96,165,250,.08)"><div>Tablet Bundle</div><div class="pt-price">+$25</div></div>
       <div class="ptrow c2" style="border-top:2px solid #2c2c2e;font-weight:800"><div>TOTAL</div><div class="pt-price" style="color:#E20074">$165</div></div>
     </div>
-    <div style="font-size:11px;color:#8e8e93;margin-top:10px">💡 <strong>Pitch:</strong> "3 people + business tablet for $165/month. That's $55/person all-in."</div>
+    <div style="font-size:11px;color:#8e8e93;margin-top:10px">💡 <strong>Pitch:</strong> "3 people + business tablet for $165/month. 3rd line is on us."</div>
   </div>
 
   <div style="background:#1c1c1e;border:1px solid #2c2c2e;border-radius:10px;padding:13px;margin-bottom:12px">
     <div style="font-weight:700;font-size:14px;margin-bottom:10px">📱 Growth Team: 5 Voice (CoreMobile) + 2 Tablets</div>
     <div class="ptbl">
       <div class="pthdr c2"><span>Item</span><span>Cost</span></div>
-      <div class="ptrow c2"><div>CoreMobile Lines 1–2</div><div class="pt-price">$120</div></div>
-      <div class="ptrow c2 highlight"><div>CoreMobile Line 3 (FREE)</div><div class="pt-price" style="color:#4cd97b">$0</div></div>
-      <div class="ptrow c2"><div>CoreMobile Lines 4–5</div><div class="pt-price">$120</div></div>
+      <div class="ptrow c2"><div>CoreMobile 5 Lines (w/ 3rd On Us)</div><div class="pt-price">$120</div></div>
       <div class="ptrow c2" style="background:rgba(96,165,250,.08)"><div>Tablet 1 (Bundle)</div><div class="pt-price">+$25</div></div>
       <div class="ptrow c2 highlight"><div>Tablet 2 (BOGOHO 50%)</div><div class="pt-price" style="color:#4cd97b">+$12.50</div></div>
-      <div class="ptrow c2" style="border-top:2px solid #2c2c2e;font-weight:800"><div>TOTAL</div><div class="pt-price" style="color:#E20074">$277.50</div></div>
+      <div class="ptrow c2" style="border-top:2px solid #2c2c2e;font-weight:800"><div>TOTAL</div><div class="pt-price" style="color:#E20074">$157.50</div></div>
     </div>
-    <div style="font-size:11px;color:#8e8e93;margin-top:10px">💡 <strong>Pitch:</strong> "5 people + 2 tablets for $277.50. Budget play for growing teams. 3rd line is free."</div>
+    <div style="font-size:11px;color:#8e8e93;margin-top:10px">💡 <strong>Pitch:</strong> "5 people + 2 tablets for $157.50. 3rd line is on us, tablets at BOGOHO pricing."</div>
   </div>
 
   <div style="background:#1c1c1e;border:1px solid #2c2c2e;border-radius:10px;padding:13px">
-    <div style="font-weight:700;font-size:14px;margin-bottom:10px">🔥 Premium Team: 5 Voice (Mixed) + 3 Tablets</div>
+    <div style="font-weight:700;font-size:14px;margin-bottom:10px">🔥 Premium Team: 5 Voice (ProMobile) + 2 Tablets</div>
     <div class="ptbl">
       <div class="pthdr c2"><span>Item</span><span>Cost</span></div>
-      <div class="ptrow c2"><div>ProMobile Lines 1–2</div><div class="pt-price">$140</div></div>
-      <div class="ptrow c2 highlight"><div>ProMobile Line 3 (FREE)</div><div class="pt-price" style="color:#4cd97b">$0</div></div>
-      <div class="ptrow c2"><div>SuperMobile Lines 4–5</div><div class="pt-price">$160</div></div>
+      <div class="ptrow c2"><div>ProMobile 5 Lines (w/ 3rd On Us)</div><div class="pt-price">$190</div></div>
       <div class="ptrow c2" style="background:rgba(96,165,250,.08)"><div>Tablet 1 (Bundle)</div><div class="pt-price">+$25</div></div>
       <div class="ptrow c2 highlight"><div>Tablet 2 (BOGOHO 50%)</div><div class="pt-price" style="color:#4cd97b">+$12.50</div></div>
-      <div class="ptrow c2 highlight"><div>Tablet 3 (BOGOHO 50%)</div><div class="pt-price" style="color:#4cd97b">+$12.50</div></div>
-      <div class="ptrow c2" style="border-top:2px solid #2c2c2e;font-weight:800"><div>TOTAL</div><div class="pt-price" style="color:#E20074">$350</div></div>
+      <div class="ptrow c2" style="border-top:2px solid #2c2c2e;font-weight:800"><div>TOTAL</div><div class="pt-price" style="color:#E20074">$227.50</div></div>
     </div>
-    <div style="font-size:11px;color:#8e8e93;margin-top:10px">💡 <strong>Pitch:</strong> "Premium stack: Pro for office staff, Super for executives, 3 tablets for field team at $12.50 each BOGOHO. One bill, complete coverage."</div>
+    <div style="font-size:11px;color:#8e8e93;margin-top:10px">💡 <strong>Pitch:</strong> "Premium stack: 5 on ProMobile (3rd line on us), 2 tablets with BOGOHO (2nd at 50% off). $227.50/month."</div>
   </div>
 
   <div class="stitle">AE Pro Tips</div>
@@ -342,7 +442,7 @@ html,body{background:#0a0a0a;color:#f5f5f7;font-family:-apple-system,BlinkMacSys
     <strong>✅ Tablet Bundle is Easy Upsell:</strong> Close voice first. Then: "Add a business tablet for just $25 more? Great for field/sales teams." Huge conversion.
   </div>
   <div class="info-box success">
-    <strong>✅ Use BOGOHO on Multiple Tablets:</strong> 2nd tablet at 50% ($12.50). 3rd tablet same rate. "Costs almost nothing to add tablets after the first."
+    <strong>✅ Use BOGOHO on Multiple Tablets:</strong> 2nd tablet at 50% ($12.50). 3rd tablet returns to regular price ($25), 4th at 50% ($12.50). Pattern alternates for every pair.
   </div>
   <div class="info-box info">
     <strong>ℹ️ Volume Quotes (14+):</strong> Per-line pricing applies. Know it but escalate to sales for complex multi-location deals with custom discounts.
@@ -358,16 +458,19 @@ html,body{background:#0a0a0a;color:#f5f5f7;font-family:-apple-system,BlinkMacSys
 try {
   const PRICING = {
     super: {
-      autopay: [[1,95],[2,160],[3,195],[4,230],[5,265],[6,300],[7,350],[8,400],[9,450],[10,500],[11,550],[12,600],[13,650]],
-      regular: [[1,100],[2,170],[3,210],[4,250],[5,290],[6,300],[7,350],[8,400],[9,450],[10,500],[11,550],[12,600],[13,650]]
+      autopay: [[1,95],[2,160],[3,160],[4,195],[5,230],[6,265],[7,300],[8,350],[9,400],[10,450],[11,500],[12,550],[13,600]],
+      regular: [[1,100],[2,170],[3,170],[4,210],[5,250],[6,290],[7,330],[8,380],[9,430],[10,480],[11,530],[12,580],[13,630]]
     },
     pro: {
-      autopay: [[1,80],[2,140],[3,165],[4,190],[5,215],[6,240],[7,280],[8,320],[9,360],[10,400],[11,440],[12,480],[13,520]],
-      regular: [[1,85],[2,150],[3,180],[4,210],[5,240],[6,240],[7,280],[8,320],[9,360],[10,400],[11,440],[12,480],[13,520]]
+      autopay: [[1,80],[2,140],[3,140],[4,165],[5,190],[6,215],[7,255],[8,295],[9,335],[10,375],[11,415],[12,455],[13,495]],
+      regular: [[1,85],[2,150],[3,150],[4,180],[5,210],[6,240],[7,280],[8,320],[9,360],[10,400],[11,440],[12,480],[13,520]]
     },
     core: {
-      autopay: [[1,60],[2,90],[3,105],[4,120],[5,135],[6,150],[7,175],[8,200],[9,225],[10,250],[11,275],[12,300],[13,325]],
-      regular: [[1,65],[2,100],[3,120],[4,140],[5,160],[6,150],[7,175],[8,200],[9,225],[10,250],[11,275],[12,300],[13,325]]
+      autopay: [[1,60],[2,90],[3,90],[4,105],[5,120],[6,135],[7,160],[8,185],[9,210],[10,235],[11,260],[12,285],[13,310]],
+      regular: [[1,65],[2,100],[3,100],[4,120],[5,140],[6,160],[7,185],[8,210],[9,235],[10,260],[11,285],[12,310],[13,335]]
+    },
+    hsi: {
+      fixed: [[1,70]] // Unlimited with device - single tier pricing
     }
   };
 
@@ -390,6 +493,9 @@ try {
   }
 
   function getPrice(plan, lines, billing) {
+    if (plan === 'hsi') {
+      return 70; // HSI Unlimited with device is fixed at $70
+    }
     if (!PRICING[plan] || !PRICING[plan][billing]) {
       console.warn('Invalid plan or billing:', plan, billing);
       return 0;
@@ -412,8 +518,9 @@ try {
       const linesElem = document.getElementById('lineCount');
       const billingElem = document.getElementById('billingType');
       const tabletsElem = document.getElementById('tabletCount');
+      const wearablesElem = document.getElementById('wearableCount');
 
-      if (!planElem || !linesElem || !billingElem || !tabletsElem) {
+      if (!planElem || !linesElem || !billingElem || !tabletsElem || !wearablesElem) {
         console.error('Missing form elements');
         return;
       }
@@ -422,23 +529,52 @@ try {
       let lines = Math.max(1, Math.min(999, parseInt(linesElem.value) || 1));
       const billing = billingElem.value || 'autopay';
       let tablets = Math.max(0, Math.min(999, parseInt(tabletsElem.value) || 0));
+      let wearables = Math.max(0, Math.min(999, parseInt(wearablesElem.value) || 0));
 
-      const voiceCost = getPrice(plan, lines, billing);
-      let totalCost = voiceCost;
+      let voiceCost = 0;
+      let displayLabel = '';
 
-      if (tablets > 0) {
-        totalCost = voiceCost + 25 + (tablets > 1 ? (tablets - 1) * 12.5 : 0);
+      if (plan === 'hsi') {
+        voiceCost = 70; // HSI fixed pricing
+        displayLabel = 'HSI Unlimited';
+      } else {
+        voiceCost = getPrice(plan, lines, billing);
+        displayLabel = `${lines} line${lines !== 1 ? 's' : ''} · ${billing}`;
       }
+
+      // Calculate tablet costs
+      let tabletCost = 0;
+      if (tablets > 0) {
+        tabletCost = 25 + (tablets > 1 ? (tablets - 1) * 12.5 : 0);
+      }
+
+      // Calculate wearable costs
+      let wearableCost = 0;
+      if (wearables > 0) {
+        const wearableRate = billing === 'autopay' ? 15 : 20;
+        wearableCost = wearables * wearableRate;
+      }
+
+      let addonCost = tabletCost + wearableCost;
+      let totalCost = voiceCost + addonCost;
 
       const voiceCostElem = document.getElementById('voiceCost');
       const voiceSubElem = document.getElementById('voiceSub');
+      const addonCostElem = document.getElementById('addonCost');
+      const addonSubElem = document.getElementById('addonSub');
       const totalCostElem = document.getElementById('totalCost');
       const totalSubElem = document.getElementById('totalSub');
 
+      let addonDescription = [];
+      if (tablets > 0) addonDescription.push(`${tablets} tablet${tablets !== 1 ? 's' : ''}`);
+      if (wearables > 0) addonDescription.push(`${wearables} wearable${wearables !== 1 ? 's' : ''}`);
+
       if (voiceCostElem) voiceCostElem.textContent = '$' + voiceCost.toLocaleString();
-      if (voiceSubElem) voiceSubElem.textContent = `${lines} line${lines !== 1 ? 's' : ''} · ${billing}`;
+      if (voiceSubElem) voiceSubElem.textContent = displayLabel;
+      if (addonCostElem) addonCostElem.textContent = '$' + addonCost.toLocaleString();
+      if (addonSubElem) addonSubElem.textContent = addonDescription.length > 0 ? addonDescription.join(' + ') : 'None';
       if (totalCostElem) totalCostElem.textContent = '$' + totalCost.toLocaleString();
-      if (totalSubElem) totalSubElem.textContent = `${tablets} tablet${tablets !== 1 ? 's' : ''} included`;
+      if (totalSubElem) totalSubElem.textContent = 'All-in monthly';
     } catch(e) {
       console.error('Quote calculation error:', e);
     }
@@ -454,6 +590,7 @@ try {
         if (state.lines) document.getElementById('lineCount').value = state.lines;
         if (state.billing) document.getElementById('billingType').value = state.billing;
         if (state.tablets) document.getElementById('tabletCount').value = state.tablets;
+        if (state.wearables) document.getElementById('wearableCount').value = state.wearables;
       }
       updateQuote();
     } catch(e) {
@@ -468,7 +605,8 @@ try {
         plan: document.getElementById('planSelect').value,
         lines: document.getElementById('lineCount').value,
         billing: document.getElementById('billingType').value,
-        tablets: document.getElementById('tabletCount').value
+        tablets: document.getElementById('tabletCount').value,
+        wearables: document.getElementById('wearableCount').value
       };
       localStorage.setItem('tmobileTool', JSON.stringify(state));
     } catch(e) {
