@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deal Quote & Timeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: linear-gradient(135deg, #f8f7f4 0%, #faf9f7 100%); font-family: 'Playfair Display', Georgia, serif; color: #1a1a1a; min-height: 100vh; }
+
+    .mono { font-family: 'IBM Plex Mono', monospace; }
+    .container { max-width: 900px; margin: 0 auto; padding: 32px 16px; }
+
+    .header { margin-bottom: 32px; }
+    .header-label { font-size: 11px; letter-spacing: 0.12em; color: #a89d92; text-transform: uppercase; margin-bottom: 10px; font-weight: 600; }
+    .header h1 { font-size: clamp(24px, 6vw, 36px); font-weight: 700; line-height: 1.2; margin-bottom: 14px; }
+    .header-value { font-size: 32px; font-weight: 700; color: #10b981; margin-bottom: 16px; }
+    .header p { font-size: 15px; color: #5a5650; line-height: 1.8; max-width: 560px; }
+
+    .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+    .kpi-card { background: linear-gradient(135deg, #fff 0%, #fafaf8 100%); border: 1px solid #e8e4dc; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(26,26,26,0.05); transition: all 0.2s; }
+    .kpi-card:hover { box-shadow: 0 4px 16px rgba(26,26,26,0.08); }
+    .kpi-label { font-size: 11px; color: #a89d92; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; font-weight: 600; }
+    .kpi-value { font-size: clamp(20px, 5vw, 24px); font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+    .kpi-sub { font-size: 12px; color: #8a8078; }
+
+    .plan-mix { margin-bottom: 32px; background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.15); border-radius: 12px; padding: 20px; }
+    .plan-mix-title { font-size: 11px; color: #1a7549; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; font-weight: 600; }
+    .plan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 14px; }
+    .plan-item { background: #fff; border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; padding: 12px 14px; }
+    .plan-item-type { font-weight: 700; font-size: 15px; margin-bottom: 4px; color: #1a7549; }
+    .plan-item-desc { font-size: 12px; color: #5a5650; margin-bottom: 6px; }
+    .plan-item-credit { font-size: 12px; color: #10b981; font-weight: 600; }
+    .plan-footer { margin-top: 14px; display: flex; gap: 16px; font-size: 13px; color: #5a5650; padding-top: 14px; border-top: 1px solid rgba(16,185,129,0.15); }
+    .plan-footer strong { color: #1a1a1a; }
+
+    .tab-wrap { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+    .tab { cursor: pointer; padding: 10px 16px; border: 1.5px solid #d4d0c8; border-radius: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.07em; text-transform: uppercase; font-weight: 500; background: transparent; color: #7a7570; transition: all 0.2s ease; white-space: nowrap; }
+    .tab.active { background: linear-gradient(135deg, #1a1a1a, #2a2a2a); color: #fff; border-color: #1a1a1a; box-shadow: 0 4px 12px rgba(26,26,26,0.15); }
+    .tab:hover:not(.active) { border-color: #1a1a1a; color: #1a1a1a; background: rgba(26,26,26,0.03); }
+
+    .view { display: none; }
+    .view.active { display: block; animation: fadeIn 0.3s ease; }
+
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px);} to {opacity:1; transform:translateY(0);} }
+
+    .phase-grid { display: grid; gap: 14px; }
+    .phase-card { border-radius: 10px; padding: 18px; transition: all 0.2s; }
+    .phase-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
+    .phase-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+    .phase-range { font-size: clamp(16px, 4vw, 18px); font-weight: 700; margin-top: 4px; }
+    .phase-badge { font-size: 11px; padding: 4px 12px; border-radius: 20px; white-space: nowrap; font-weight: 600; }
+    .phase-days { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
+    .phase-desc { font-size: 14px; line-height: 1.8; margin-bottom: 12px; }
+    .phase-bullets { display: grid; gap: 6px; }
+    .phase-bullet { display: flex; gap: 10px; font-size: 14px; }
+    .phase-bullet-icon { font-weight: 700; flex-shrink: 0; }
+
+    .review-box { background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.04)); border: 1.5px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 16px 18px; margin-top: 14px; }
+    .review-box-text { font-size: 13px; color: #7a7570; line-height: 1.8; }
+    .review-highlight { color: #f59e0b; font-weight: 700; }
+
+    .tbl-scroll { overflow-x: auto; width: 100%; -webkit-overflow-scrolling: touch; border-radius: 10px; border: 1px solid #e8e4dc; box-shadow: 0 2px 8px rgba(26,26,26,0.05); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    td, th { padding: 11px 13px; }
+    thead th { background: linear-gradient(135deg, #1a1a1a, #2a2a2a); color: #f8f7f4; font-weight: 600; font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; }
+    tbody tr { border-bottom: 1px solid #f0ede6; }
+    .row-exp { cursor: pointer; transition: background 0.15s; }
+    .row-exp:hover td { background: #f5f2ec !important; }
+    .td-month { font-weight: 700; }
+    .td-charge { color: #d4380d; font-weight: 600; }
+    .td-credit { color: #10b981; font-weight: 600; }
+    .td-payment { color: #6366f1; font-weight: 600; }
+    .td-balance { font-weight: 700; }
+    .td-balance.credit { color: #10b981; }
+    .td-balance.due { color: #d4380d; }
+    .expand-icon { text-align: right; color: #c8c4bc; font-size: 10px; font-weight: 600; }
+
+    .expand-detail { background: #f5f2ec; padding: 12px 14px 14px 20px; border-bottom: 1px solid #e8e4dc; font-size: 13px; display: none; }
+    .expand-detail.active { display: block; }
+    .expand-detail-row { margin-bottom: 8px; }
+    .expand-detail-row strong { font-weight: 700; }
+    .expand-detail-divider { margin-top: 8px; padding-top: 8px; border-top: 1px solid #d4d0c8; font-weight: 700; }
+
+    .credit-rows { display: grid; gap: 12px; }
+    .credit-row { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #fff 0%, #fafaf8 100%); border: 1px solid #e8e4dc; border-radius: 10px; padding: 14px 16px; gap: 12px; transition: all 0.2s; }
+    .credit-row:hover { box-shadow: 0 4px 12px rgba(26,26,26,0.08); transform: translateY(-2px); }
+    .credit-info { min-width: 0; flex: 1; }
+    .credit-label { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+    .credit-note { font-size: 13px; color: #8a8078; }
+    .credit-amount { font-size: clamp(16px, 4vw, 20px); font-weight: 700; flex-shrink: 0; }
+
+    .totals-box { background: linear-gradient(135deg, #1a1a1a, #2a2a2a); color: #f8f7f4; border-radius: 12px; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; margin-top: 8px; }
+    .totals-left { }
+    .totals-label { font-size: 11px; color: #a89d92; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; font-weight: 600; }
+    .totals-desc { font-size: 14px; color: #d4d0c8; }
+    .totals-value { font-size: clamp(20px, 5vw, 26px); font-weight: 700; color: #10b981; }
+
+    .totals-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .totals-grid-item { background: linear-gradient(135deg, #fff 0%, #fafaf8 100%); border: 1px solid #e8e4dc; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(26,26,26,0.05); text-align: center; }
+    .totals-grid-label { font-size: 11px; color: #a89d92; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; font-weight: 600; }
+    .totals-grid-value { font-size: clamp(16px, 4vw, 20px); font-weight: 700; }
+
+    .footer { margin-top: 32px; font-size: 11px; color: #b8b4ac; text-align: center; line-height: 1.8; }
+
+    @media (max-width: 640px) {
+      .kpi-grid { grid-template-columns: 1fr; }
+      .totals-grid { grid-template-columns: 1fr; }
+      .plan-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-label">📊 Deal Quote & Timeline</div>
+      <h1>Year 1 Effective Cost</h1>
+      <div class="header-value" id="effectiveCost">$11.83/line/month</div>
+      <p>25 connections (10 Voice + 10 Tablet + 5 MI Stack) @ $625/month including taxes & fees. After all credits and promotions applied across the first 12 months.</p>
+    </div>
+
+    <!-- KPI Grid -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="mono kpi-label">Monthly Charge</div>
+        <div class="mono kpi-value">$625</div>
+        <div class="kpi-sub">Includes taxes & fees</div>
+      </div>
+      <div class="kpi-card">
+        <div class="mono kpi-label">Total Credits Applied</div>
+        <div class="mono kpi-value" style="color: #10b981;" id="totalCreditsKpi">$5,450</div>
+        <div class="kpi-sub">Year 1 discount value</div>
+      </div>
+      <div class="kpi-card">
+        <div class="mono kpi-label">Net Year 1 Cost</div>
+        <div class="mono kpi-value" style="color: #6366f1;" id="netCostKpi">$2,050</div>
+        <div class="kpi-sub">After all credits</div>
+      </div>
+      <div class="kpi-card">
+        <div class="mono kpi-label">Effective Annual ROI</div>
+        <div class="mono kpi-value" style="color: #f59e0b;">47%</div>
+        <div class="kpi-sub">vs gross $7,500</div>
+      </div>
+    </div>
+
+    <!-- Plan Mix -->
+    <div class="plan-mix">
+      <div class="plan-mix-title">🎯 Configuration</div>
+      <div class="plan-grid">
+        <div class="plan-item">
+          <div class="plan-item-type">10 Voice</div>
+          <div class="plan-item-desc">Unlimited plan</div>
+          <div class="plan-item-credit">$1,500 credit</div>
+        </div>
+        <div class="plan-item">
+          <div class="plan-item-type">10 Tablet</div>
+          <div class="plan-item-desc">Data plan</div>
+          <div class="plan-item-credit">$1,000 credit</div>
+        </div>
+        <div class="plan-item">
+          <div class="plan-item-type">5 MI Stack</div>
+          <div class="plan-item-desc">Mobile internet</div>
+          <div class="plan-item-credit">Included</div>
+        </div>
+      </div>
+      <div class="plan-footer">
+        <span><strong>Base:</strong> $475/mo</span>
+        <span><strong>Taxes & fees:</strong> $150/mo (25×$6)</span>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-wrap">
+      <button class="tab active" onclick="switchView('summary')">Phase Summary</button>
+      <button class="tab" onclick="switchView('monthly')">Month-by-Month</button>
+      <button class="tab" onclick="switchView('credits')">Credit Breakdown</button>
+    </div>
+
+    <!-- Phase Summary View -->
+    <div id="summary" class="view active">
+      <div class="phase-grid">
+        <div class="phase-card" style="background: rgba(16,185,129,0.08); border: 1.5px solid rgba(16,185,129,0.3);">
+          <div class="phase-header">
+            <div>
+              <div class="mono phase-days" style="color: #10b981;">Day 1–90</div>
+              <div class="phase-range">Months 1–3 — Savings Launch</div>
+            </div>
+            <span class="mono phase-badge" style="background: #10b981; color: #fff;">Deepest savings</span>
+          </div>
+          <p class="phase-desc">Largest credit stack hits. Voice & Tablet promos, partner credit, and one-time credits all land here. Customer pays only $200 in Month 1, then $0. Account runs deep in credit.</p>
+          <div class="phase-bullets">
+            <div class="phase-bullet">
+              <span class="phase-bullet-icon" style="color: #10b981;">→</span>
+              <span>Month 1: $200 customer payment + $50 monthly credit</span>
+            </div>
+            <div class="phase-bullet">
+              <span class="phase-bullet-icon" style="color: #10b981;">→</span>
+              <span>Month 2: $300 one-time + $650 partner credit stack</span>
+            </div>
+            <div class="phase-bullet">
+              <span class="phase-bullet-icon" style="color: #10b981;">→</span>
+              <span>Month 3: $1,500 Voice + $1,000 Tablet promos apply</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="phase-card" style="background: rgba(99,102,241,0.08); border: 1.5px solid rgba(99,102,241,0.3);">
+          <div class="phase-header">
+            <div>
+              <div class="mono phase-days" style="color: #6366f1;">Day 91–180</div>
+              <div class="phase-range">Months 4–6 — Credit Runway</div>
+            </div>
+            <span class="mono phase-badge" style="background: #6366f1; color: #fff;">Credit carry</span>
+          </div>
+          <p class="phase-desc">$50/month credit continues through Month 6. Accumulated credit from Phase 1 absorbs charges — no out-of-pocket. 180-day bill review calendar reminder triggers end of this phase.</p>
+          <div class="phase-bullets">
+            <div class="phase-bullet">
+              <span class="phase-bullet-icon" style="color: #6366f1;">→</span>
+              <span>$50 monthly credit still active</span>
+            </div>
+            <div class="phase-bullet">
+              <span class="phase-bullet-icon" style="color: #6366f1;">→</span>
+              <span>Prior credit balance covers recurring charges</span>
+            </div>
+            <div class="phase-bullet">
+              <span class="phase-bullet-icon" style="color: #6366f1;">→</span>
+              <span>⚑ 180-day rate plan review at end of Month 6</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="phase-card" style="background: rgba(245,158,11,0.08); border: 1.5px solid rgba(245,158,11,0.3);">
+          <div class="phase-header">
+            <div>
+              <div class="mono phase-days" style="color: #f59e0b;">Day 181–365</div>
+              <div class="phase-range">Months 7–12 — Standard Billing</div>
+            </div>
+            <span class="mono phase-badge" style="background: #f59e0b; color: #fff;">Normal billing</span>
+          </div>
+          <p class="phase-desc">Credits exhausted. Standard $625/month billing resumes. Months 7–10 carry-forward covers most charges. Month 11 is nearly covered. Month 12 is first full standard bill.</p>
+          <div class="phase-bullets">
+            <div class="phase-bullet">
+              <span class="phase-bullet-icon" style="color: #f59e0b;">→</span>
+              <span>Months 7–10: Remaining credit carry-forward covers charges</span>
+            </div>
+            <div class="phase-bullet">
+              <span class="phase-bullet-icon" style="color: #f59e0b;">→</span>
+              <span>Month 11: ~$25 due (carry-forward nearly covers it)</span>
+            </div>
+            <div class="phase-bullet">
+              <span class="phase-bullet-icon" style="color: #f59e0b;">→</span>
+              <span>Month 12: Full $625 standard billing begins</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-box">
+          <div class="review-box-text">
+            <span class="review-highlight">⚑ 180-Day Review</span> — Rate plan changes completed at 180-day bill review. Calendar reminder set. Review balance and adjust plan at Day 180 (end of Month 6).
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Month-by-Month View -->
+    <div id="monthly" class="view">
+      <div class="tbl-scroll">
+        <table id="monthTable">
+          <thead>
+            <tr>
+              <th class="mono">Month</th>
+              <th class="mono" style="text-align: right;">Charge</th>
+              <th class="mono" style="text-align: right;">Credits</th>
+              <th class="mono" style="text-align: right;">Payment</th>
+              <th class="mono" style="text-align: right;">Balance</th>
+              <th class="mono" style="text-align: right;"></th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Credits View -->
+    <div id="credits" class="view">
+      <div class="credit-rows" id="creditRows"></div>
+      <div class="totals-box">
+        <div class="totals-left">
+          <div class="mono totals-label">Total Value Applied</div>
+          <div class="totals-desc">Credits + payment vs $7,500 gross annual</div>
+        </div>
+        <div class="mono totals-value" id="totalValueApplied">$5,650</div>
+      </div>
+      <div class="totals-grid">
+        <div class="totals-grid-item">
+          <div class="mono totals-grid-label">Gross Annual</div>
+          <div class="mono totals-grid-value">$7,500</div>
+        </div>
+        <div class="totals-grid-item">
+          <div class="mono totals-grid-label">Total Savings</div>
+          <div class="mono totals-grid-value" style="color: #10b981;" id="totalSavings">-$5,450</div>
+        </div>
+        <div class="totals-grid-item">
+          <div class="mono totals-grid-label">You Pay Yr 1</div>
+          <div class="mono totals-grid-value" style="color: #6366f1;" id="youPayYr1">$2,050</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      25 connections × 30-day billing cycles × Credits carry forward × Rates subject to plan terms<br>
+      180-day review reminder set × Standard billing begins Month 7 × Terms: 12-month period
+    </div>
+
+  </div>
+
+  <script>
+    const MONTHS = [
+      { mo: 1,  charge: 625, payment: 200, credits: [{ label: "$50 Monthly Credit", amt: 50 }] },
+      { mo: 2,  charge: 625, payment: 0,   credits: [{ label: "$50 Monthly Credit", amt: 50 }, { label: "$300 One-Time Credit", amt: 300 }, { label: "$650 Partner Credit", amt: 650 }] },
+      { mo: 3,  charge: 625, payment: 0,   credits: [{ label: "$50 Monthly Credit", amt: 50 }, { label: "Voice One-Time Credit", amt: 1500 }, { label: "Tablet One-Time Credit", amt: 1000 }] },
+      { mo: 4,  charge: 625, payment: 0,   credits: [{ label: "$50 Monthly Credit", amt: 50 }] },
+      { mo: 5,  charge: 625, payment: 0,   credits: [{ label: "$50 Monthly Credit", amt: 50 }] },
+      { mo: 6,  charge: 625, payment: 0,   credits: [{ label: "$50 Monthly Credit", amt: 50 }] },
+      { mo: 7,  charge: 625, payment: 0,   credits: [] },
+      { mo: 8,  charge: 625, payment: 0,   credits: [] },
+      { mo: 9,  charge: 625, payment: 0,   credits: [] },
+      { mo: 10, charge: 625, payment: 0,   credits: [] },
+      { mo: 11, charge: 625, payment: 0,   credits: [] },
+      { mo: 12, charge: 625, payment: 0,   credits: [] },
+    ];
+
+    const CREDIT_ITEMS = [
+      { label: "Customer Payment — Month 1", amt: 200, color: "#6366f1", note: "One-time upfront payment" },
+      { label: "$50 Monthly Credit × 6 months", amt: 300, color: "#10b981", note: "Months 1–6, $50/mo" },
+      { label: "$300 One-Time Credit", amt: 300, color: "#10b981", note: "Applied Month 2" },
+      { label: "$650 Partner Credit", amt: 650, color: "#10b981", note: "Applied Month 2" },
+      { label: "Voice One-Time Credit", amt: 1500, color: "#10b981", note: "10 Voice lines — Applied Month 3" },
+      { label: "Tablet One-Time Credit", amt: 1000, color: "#10b981", note: "10 Tablet lines — Applied Month 3" },
+    ];
+
+    function buildRows() {
+      let balance = 0;
+      return MONTHS.map(m => {
+        const totalCredits = m.credits.reduce((s, c) => s + c.amt, 0);
+        balance = balance + m.charge - totalCredits - m.payment;
+        return { ...m, totalCredits, balance };
+      });
+    }
+
+    const rows = buildRows();
+    const totalCredits = rows.reduce((s, r) => s + r.totalCredits, 0);
+    const totalPayments = rows.reduce((s, r) => s + r.payment, 0);
+    const totalCharges = rows.reduce((s, r) => s + r.charge, 0);
+    const netCost = totalCharges - totalCredits - totalPayments;
+    const perLine = (netCost / 12) / 25;
+
+    function switchView(viewName) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(viewName).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function renderMonthTable() {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = rows.map((r, idx) => {
+        const bal = r.balance;
+        const balClass = bal < 0 ? 'credit' : 'due';
+        const balText = bal < -0.01 ? `$${Math.abs(bal).toFixed(0)} cr` : bal > 0.01 ? `$${bal.toFixed(0)} due` : '$0';
+
+        return `
+          <tr class="row-exp" onclick="toggleExpand(${r.mo})">
+            <td class="mono td-month">Mo ${r.mo}</td>
+            <td class="mono td-charge" style="text-align: right;">$${r.charge}</td>
+            <td class="mono td-credit" style="text-align: right;">${r.totalCredits > 0 ? `-$${r.totalCredits.toFixed(0)}` : '—'}</td>
+            <td class="mono td-payment" style="text-align: right;">${r.payment > 0 ? `-$${r.payment}` : '—'}</td>
+            <td class="mono td-balance ${balClass}" style="text-align: right;">${balText}</td>
+            <td class="expand-icon">▼</td>
+          </tr>
+          <tr id="expand-${r.mo}" class="expand-detail">
+            <td colspan="6">
+              <div class="expand-detail-row" style="color: #d4380d;"><strong>Charge:</strong> $625 (base $475 + $150 taxes/fees)</div>
+              ${r.credits.map(c => `<div class="expand-detail-row" style="color: #10b981;"><strong>Credit:</strong> ${c.label} — <strong>-$${c.amt.toLocaleString()}</strong></div>`).join('')}
+              ${r.payment > 0 ? `<div class="expand-detail-row" style="color: #6366f1;"><strong>Customer payment:</strong> -$${r.payment}</div>` : ''}
+              <div class="expand-detail-divider" style="color: ${bal < 0 ? '#10b981' : '#d4380d'};">
+                Running balance: ${bal < -0.01 ? `$${Math.abs(bal).toFixed(0)} credit` : `$${bal.toFixed(0)} due`}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function toggleExpand(mo) {
+      const detail = document.getElementById(`expand-${mo}`);
+      detail.classList.toggle('active');
+    }
+
+    function renderCredits() {
+      const container = document.getElementById('creditRows');
+      container.innerHTML = CREDIT_ITEMS.map(c => `
+        <div class="credit-row">
+          <div class="credit-info">
+            <div class="credit-label">${c.label}</div>
+            <div class="credit-note">${c.note}</div>
+          </div>
+          <div class="mono credit-amount" style="color: ${c.color};">$${c.amt.toLocaleString()}</div>
+        </div>
+      `).join('');
+    }
+
+    function updateKPIs() {
+      document.getElementById('effectiveCost').textContent = `$${perLine.toFixed(2)}/line/month`;
+      document.getElementById('totalCreditsKpi').textContent = `$${totalCredits.toLocaleString()}`;
+      document.getElementById('netCostKpi').textContent = `$${netCost.toLocaleString()}`;
+      document.getElementById('totalValueApplied').textContent = `$${(totalCredits + totalPayments).toLocaleString()}`;
+      document.getElementById('totalSavings').textContent = `-$${(totalCredits + totalPayments).toLocaleString()}`;
+      document.getElementById('youPayYr1').textContent = `$${netCost.toLocaleString()}`;
+    }
+
+    // Init
+    renderMonthTable();
+    renderCredits();
+    updateKPIs();
+  </script>
+</body>
+</html>

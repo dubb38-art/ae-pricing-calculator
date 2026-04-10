@@ -1,0 +1,15 @@
+{
+  "name": "ae-pricing-calculator",
+  "version": 2,
+  "public": true,
+  "routes": [
+    {
+      "src": "/deal-quote(?:\\.html)?",
+      "dest": "/deal-quote.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/t-mobile-bundle-monster.html"
+    }
+  ]
+}
