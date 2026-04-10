@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#0a0a0a">
+<title>T-Mobile for Business — AE Pricing Tool</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:#0a0a0a;color:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+.hdr{background:linear-gradient(135deg,#E20074,#8a0047);padding:20px 16px 16px;position:sticky;top:0;z-index:200;box-shadow:0 4px 20px rgba(226,0,116,.2)}
+.hdr h1{font-size:24px;font-weight:900;color:#fff;letter-spacing:-.5px}
+.hdr-sub{font-size:12px;color:rgba(255,255,255,.8)}
+.claude-badge{display:inline-block;background:rgba(255,255,255,.15);border-radius:8px;padding:2px 8px;font-size:9px;font-weight:700;color:#fff;margin-bottom:8px;border:1px solid rgba(255,255,255,.2)}
+
+/* KPI SECTION */
+.kpi-strip{background:#111;padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;border-bottom:1px solid #2c2c2e}
+.kpi{background:#1c1c1e;border-radius:8px;padding:11px 12px;border:1px solid #2c2c2e}
+.kpi-label{font-size:10px;font-weight:700;color:#8e8e93;text-transform:uppercase;margin-bottom:4px;letter-spacing:.05em}
+.kpi-value{font-size:20px;font-weight:800;color:#E20074}
+.kpi-sub{font-size:11px;color:#8e8e93;margin-top:2px}
+
+/* TABS */
+.plan-tabs{background:#1c1c1e;border-bottom:1px solid #2c2c2e;display:flex;gap:0;position:sticky;top:70px;z-index:190;overflow-x:auto;scrollbar-width:none}
+.plan-tabs::-webkit-scrollbar{display:none}
+.ptab{padding:12px 16px;border:none;background:none;color:#8e8e93;font-size:12px;font-weight:700;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;flex-shrink:0;font-family:inherit}
+.ptab.on{color:#fff;border-bottom-color:#E20074}
+.ptab:hover{color:#f5f5f7}
+
+/* CALCULATOR */
+.calc-wrapper{background:#111;padding:16px;border-radius:10px;border:1px solid #2c2c2e;margin-bottom:16px}
+.calc-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.calc-input{background:#1c1c1e;border:1px solid #2c2c2e;border-radius:8px;padding:10px 12px;color:#f5f5f7;font-size:13px;font-family:inherit}
+.calc-input label{display:block;font-size:11px;color:#8e8e93;font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+.calc-input select{width:100%;background:#2c2c2e;border:none;color:#f5f5f7;padding:8px;border-radius:6px;cursor:pointer;font-size:13px}
+
+/* CONTENT */
+.content{padding:14px 16px 60px}
+.plan-sheet{display:none}
+.plan-sheet.on{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* PRICING TABLE */
+.ptbl{background:#1c1c1e;border-radius:10px;overflow:hidden;border:1px solid #2c2c2e;margin-bottom:12px}
+.pthdr{background:#2c2c2e;display:grid;padding:12px;gap:8px;border-bottom:1px solid #3a3a3c;font-size:11px;font-weight:800;color:#8e8e93;text-transform:uppercase;letter-spacing:.06em}
+.ptrow{display:grid;padding:12px;gap:8px;border-bottom:.5px solid #2c2c2e;font-size:13px;align-items:center}
+.ptrow:last-child{border-bottom:none}
+.ptrow.highlight{background:rgba(76,217,123,.08)}
+.pt-label{font-weight:700}
+.pt-price{text-align:right;font-weight:800}
+.pt-saving{text-align:right;font-size:11px;color:#4cd97b;font-weight:700}
+
+/* RESULT CARD */
+.result-card{background:linear-gradient(135deg,#1c1c1e,#2c2c2e);border:1.5px solid #2c2c2e;border-radius:10px;padding:16px;margin-bottom:12px}
+.result-label{font-size:11px;color:#8e8e93;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;font-weight:700}
+.result-value{font-size:28px;font-weight:900;color:#E20074}
+.result-sub{font-size:12px;color:#8e8e93;margin-top:4px}
+
+/* FEATURE LIST */
+.feat-list{display:grid;gap:8px;margin-bottom:12px}
+.feat-item{background:#1c1c1e;border:1px solid #2c2c2e;border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.6}
+.feat-icon{font-size:11px;font-weight:700;color:#E20074;margin-bottom:3px}
+
+/* INFO BOX */
+.info-box{border-radius:10px;padding:12px;margin-bottom:10px;border-left:3px solid;line-height:1.6;font-size:12px}
+.info-box.success{background:#0a2e14;border-color:#0d5c2a;color:#4cd97b}
+.info-box.warning{background:#2a1f00;border-color:#f59e0b;color:#ffd60a}
+.info-box.info{background:#0d1a2e;border-color:#1a3a8f;color:#5ba3f5}
+.info-box strong{font-weight:800;color:#f5f5f7}
+
+/* GRID LAYOUTS */
+.c2{grid-template-columns:1fr 1fr}
+.c3{grid-template-columns:60px 1fr 1fr}
+.c4{grid-template-columns:repeat(2,1fr)}
+
+.stitle{font-size:11px;font-weight:800;text-transform:uppercase;color:#8e8e93;margin:16px 0 10px;padding-bottom:8px;border-bottom:1px solid #2c2c2e;letter-spacing:.06em}
+
+.safe{height:40px}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <span class="claude-badge">🤖 AE TOOL</span>
+  <h1>T-Mobile Business Pricing</h1>
+  <div class="hdr-sub">Real-time pricing calculator for Account Executives — SuperMobile, ProMobile, CoreMobile</div>
+</div>
+
+<div class="plan-tabs">
+  <button class="ptab on" onclick="switchPlan('overview')">📋 Overview</button>
+  <button class="ptab" onclick="switchPlan('super')">🔥 SuperMobile</button>
+  <button class="ptab" onclick="switchPlan('pro')">💪 ProMobile</button>
+  <button class="ptab" onclick="switchPlan('core')">💡 CoreMobile</button>
+  <button class="ptab" onclick="switchPlan('bundles')">📦 Bundle Scenarios</button>
+</div>
+
+<div class="content">
+
+<!-- OVERVIEW -->
+<div class="plan-sheet on" id="plan-overview">
+  <div class="stitle">Quick Start — Pick a Plan & Enter Line Count</div>
+
+  <div class="calc-wrapper">
+    <div class="calc-row">
+      <div class="calc-input">
+        <label>Select Plan</label>
+        <select id="planSelect" onchange="updateQuote()">
+          <option value="super">SuperMobile</option>
+          <option value="pro">ProMobile</option>
+          <option value="core">CoreMobile</option>
+        </select>
+      </div>
+      <div class="calc-input">
+        <label>Number of Lines</label>
+        <input type="number" id="lineCount" value="5" min="1" max="100" onchange="updateQuote()" onkeyup="updateQuote()">
+      </div>
+    </div>
+    <div class="calc-row">
+      <div class="calc-input">
+        <label>Billing Type</label>
+        <select id="billingType" onchange="updateQuote()">
+          <option value="autopay">AutoPay</option>
+          <option value="regular">Regular</option>
+        </select>
+      </div>
+      <div class="calc-input">
+        <label>Add Tablets</label>
+        <input type="number" id="tabletCount" value="0" min="0" max="50" onchange="updateQuote()" onkeyup="updateQuote()">
+      </div>
+    </div>
+  </div>
+
+  <div id="quoteResult" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+    <div class="result-card">
+      <div class="result-label">Monthly Voice Cost</div>
+      <div class="result-value" id="voiceCost">$0</div>
+      <div class="result-sub" id="voiceSub"></div>
+    </div>
+    <div class="result-card">
+      <div class="result-label">With Tablets</div>
+      <div class="result-value" id="totalCost">$0</div>
+      <div class="result-sub" id="totalSub"></div>
+    </div>
+  </div>
+
+  <div class="info-box success">
+    <strong>💚 3rd Line Free:</strong> Lines 1–2 paid. Line 3 FREE on SuperMobile, ProMobile, CoreMobile with AutoPay. See pricing tables below for exact costs.
+  </div>
+
+  <div class="stitle">All Plans at a Glance</div>
+  <div style="display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+    <div style="background:#1c1c1e;border:1.5px solid #f59e0b;border-radius:10px;padding:12px">
+      <div style="font-size:18px;font-weight:900;color:#fbbf24;margin-bottom:4px">SuperMobile</div>
+      <div style="font-size:11px;color:#8e8e93;line-height:1.6">Unlimited premium data • Network slicing • Threat Protect</div>
+      <div style="font-size:13px;font-weight:700;color:#f59e0b;margin-top:8px">From $95/line</div>
+    </div>
+    <div style="background:#1c1c1e;border:1.5px solid #E20074;border-radius:10px;padding:12px">
+      <div style="font-size:18px;font-weight:900;color:#ff6bb3;margin-bottom:4px">ProMobile</div>
+      <div style="font-size:11px;color:#8e8e93;line-height:1.6">200GB premium data • 5-year guarantee • 50GB hotspot</div>
+      <div style="font-size:13px;font-weight:700;color:#E20074;margin-top:8px">From $80/line</div>
+    </div>
+    <div style="background:#1c1c1e;border:1.5px solid #f97316;border-radius:10px;padding:12px">
+      <div style="font-size:18px;font-weight:900;color:#f97316;margin-bottom:4px">CoreMobile</div>
+      <div style="font-size:11px;color:#8e8e93;line-height:1.6">50GB premium data • Entry-level • 25GB hotspot</div>
+      <div style="font-size:13px;font-weight:700;color:#f97316;margin-top:8px">From $60/line</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SUPERMOBILE -->
+<div class="plan-sheet" id="plan-super">
+  <div style="background:linear-gradient(135deg,#1a1200,#1c1c1e);border:1.5px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:14px">
+    <div style="font-size:24px;font-weight:900;color:#fbbf24;margin-bottom:6px">SuperMobile</div>
+    <div style="font-size:13px;color:#8e8e93;line-height:1.6">Flagship unlimited data plan. Unlimited premium data with zero deprioritization. Network slicing, Threat Protect, T-Satellite included.</div>
+  </div>
+
+  <div class="stitle">Lines 1–7 Pricing</div>
+  <div class="ptbl">
+    <div class="pthdr c3"><span>Lines</span><span>AutoPay</span><span>Regular</span></div>
+    <div class="ptrow c3" style="background:rgba(251,191,36,.08)"><div class="pt-label">1</div><div class="pt-price" style="color:#fbbf24">$95</div><div class="pt-price">$100</div></div>
+    <div class="ptrow c3" style="background:rgba(251,191,36,.08)"><div class="pt-label">2</div><div class="pt-price" style="color:#fbbf24">$160</div><div class="pt-price">$170</div></div>
+    <div class="ptrow c3 highlight"><div class="pt-label">3 (Free)</div><div class="pt-price" style="color:#4cd97b">$195</div><div class="pt-price">$210</div></div>
+    <div class="ptrow c3"><div class="pt-label">4</div><div class="pt-price">$230</div><div class="pt-price">$250</div></div>
+    <div class="ptrow c3"><div class="pt-label">5</div><div class="pt-price">$265</div><div class="pt-price">$290</div></div>
+    <div class="ptrow c3"><div class="pt-label">6</div><div class="pt-price">$300</div><div class="pt-price">$300</div></div>
+    <div class="ptrow c3"><div class="pt-label">7</div><div class="pt-price">$350</div><div class="pt-price">$350</div></div>
+  </div>
+
+  <div class="stitle">Lines 8–14+ Pricing</div>
+  <div class="ptbl">
+    <div class="pthdr c2"><span>Lines</span><span>Cost</span></div>
+    <div class="ptrow c2"><div class="pt-label">8</div><div class="pt-price">$400</div></div>
+    <div class="ptrow c2"><div class="pt-label">9</div><div class="pt-price">$450</div></div>
+    <div class="ptrow c2"><div class="pt-label">10</div><div class="pt-price">$500</div></div>
+    <div class="ptrow c2"><div class="pt-label">11</div><div class="pt-price">$550</div></div>
+    <div class="ptrow c2"><div class="pt-label">12</div><div class="pt-price">$600</div></div>
+    <div class="ptrow c2"><div class="pt-label">13</div><div class="pt-price">$650</div></div>
+    <div class="ptrow c2"><div class="pt-label">14+</div><div class="pt-price">$50/line</div></div>
+  </div>
+
+  <div class="info-box warning">
+    <strong>AutoPay Savings:</strong> AutoPay customers get $5–$20 off per plan tier (Lines 1–5). Significant savings for recurring billing.
+  </div>
+</div>
+
+<!-- PROMOBILE -->
+<div class="plan-sheet" id="plan-pro">
+  <div style="background:linear-gradient(135deg,#1a0510,#1c1c1e);border:1.5px solid #E20074;border-radius:10px;padding:14px;margin-bottom:14px">
+    <div style="font-size:24px;font-weight:900;color:#ff6bb3;margin-bottom:6px">ProMobile</div>
+    <div style="font-size:13px;color:#8e8e93;line-height:1.6">Best value for most teams. 200GB premium data, 50GB hotspot, 5-year price guarantee, Scam Shield included.</div>
+  </div>
+
+  <div class="stitle">Lines 1–7 Pricing</div>
+  <div class="ptbl">
+    <div class="pthdr c3"><span>Lines</span><span>AutoPay</span><span>Regular</span></div>
+    <div class="ptrow c3" style="background:rgba(255,107,179,.08)"><div class="pt-label">1</div><div class="pt-price" style="color:#ff6bb3">$80</div><div class="pt-price">$85</div></div>
+    <div class="ptrow c3" style="background:rgba(255,107,179,.08)"><div class="pt-label">2</div><div class="pt-price" style="color:#ff6bb3">$140</div><div class="pt-price">$150</div></div>
+    <div class="ptrow c3 highlight"><div class="pt-label">3 (Free)</div><div class="pt-price" style="color:#4cd97b">$165</div><div class="pt-price">$180</div></div>
+    <div class="ptrow c3"><div class="pt-label">4</div><div class="pt-price">$190</div><div class="pt-price">$210</div></div>
+    <div class="ptrow c3"><div class="pt-label">5</div><div class="pt-price">$215</div><div class="pt-price">$240</div></div>
+    <div class="ptrow c3"><div class="pt-label">6</div><div class="pt-price">$240</div><div class="pt-price">$240</div></div>
+    <div class="ptrow c3"><div class="pt-label">7</div><div class="pt-price">$280</div><div class="pt-price">$280</div></div>
+  </div>
+
+  <div class="stitle">Lines 8–14+ Pricing</div>
+  <div class="ptbl">
+    <div class="pthdr c2"><span>Lines</span><span>Cost</span></div>
+    <div class="ptrow c2"><div class="pt-label">8</div><div class="pt-price">$320</div></div>
+    <div class="ptrow c2"><div class="pt-label">9</div><div class="pt-price">$360</div></div>
+    <div class="ptrow c2"><div class="pt-label">10</div><div class="pt-price">$400</div></div>
+    <div class="ptrow c2"><div class="pt-label">11</div><div class="pt-price">$440</div></div>
+    <div class="ptrow c2"><div class="pt-label">12</div><div class="pt-price">$480</div></div>
+    <div class="ptrow c2"><div class="pt-label">13</div><div class="pt-price">$520</div></div>
+    <div class="ptrow c2"><div class="pt-label">14+</div><div class="pt-price">$40/line</div></div>
+  </div>
+
+  <div class="info-box info">
+    <strong>AE Pitch:</strong> Only $15/line more than CoreMobile, but 4x the data (200GB vs 50GB). 3rd line free makes 3 people for $165/month with AutoPay.
+  </div>
+</div>
+
+<!-- COREMOBILE -->
+<div class="plan-sheet" id="plan-core">
+  <div style="background:linear-gradient(135deg,#1a0f00,#1c1c1e);border:1.5px solid #f97316;border-radius:10px;padding:14px;margin-bottom:14px">
+    <div style="font-size:24px;font-weight:900;color:#f97316;margin-bottom:6px">CoreMobile</div>
+    <div style="font-size:13px;color:#8e8e93;line-height:1.6">Budget entry-level plan. Unlimited talk & text, 50GB premium data, 25GB hotspot. Perfect for startups and cost-conscious teams.</div>
+  </div>
+
+  <div class="stitle">Lines 1–7 Pricing</div>
+  <div class="ptbl">
+    <div class="pthdr c3"><span>Lines</span><span>AutoPay</span><span>Regular</span></div>
+    <div class="ptrow c3" style="background:rgba(249,115,22,.08)"><div class="pt-label">1</div><div class="pt-price" style="color:#f97316">$60</div><div class="pt-price">$65</div></div>
+    <div class="ptrow c3" style="background:rgba(249,115,22,.08)"><div class="pt-label">2</div><div class="pt-price" style="color:#f97316">$90</div><div class="pt-price">$100</div></div>
+    <div class="ptrow c3 highlight"><div class="pt-label">3 (Free)</div><div class="pt-price" style="color:#4cd97b">$105</div><div class="pt-price">$120</div></div>
+    <div class="ptrow c3"><div class="pt-label">4</div><div class="pt-price">$120</div><div class="pt-price">$140</div></div>
+    <div class="ptrow c3"><div class="pt-label">5</div><div class="pt-price">$135</div><div class="pt-price">$160</div></div>
+    <div class="ptrow c3"><div class="pt-label">6</div><div class="pt-price">$150</div><div class="pt-price">$150</div></div>
+    <div class="ptrow c3"><div class="pt-label">7</div><div class="pt-price">$175</div><div class="pt-price">$175</div></div>
+  </div>
+
+  <div class="stitle">Lines 8–14+ Pricing</div>
+  <div class="ptbl">
+    <div class="pthdr c2"><span>Lines</span><span>Cost</span></div>
+    <div class="ptrow c2"><div class="pt-label">8</div><div class="pt-price">$200</div></div>
+    <div class="ptrow c2"><div class="pt-label">9</div><div class="pt-price">$225</div></div>
+    <div class="ptrow c2"><div class="pt-label">10</div><div class="pt-price">$250</div></div>
+    <div class="ptrow c2"><div class="pt-label">11</div><div class="pt-price">$275</div></div>
+    <div class="ptrow c2"><div class="pt-label">12</div><div class="pt-price">$300</div></div>
+    <div class="ptrow c2"><div class="pt-label">13</div><div class="pt-price">$325</div></div>
+    <div class="ptrow c2"><div class="pt-label">14+</div><div class="pt-price">$25/line</div></div>
+  </div>
+
+  <div class="info-box success">
+    <strong>Upsell Opportunity:</strong> Start with CoreMobile ($60/line), upgrade to ProMobile ($80/line) after 30 days if usage shows higher data needs. Same 3rd line free on both.
+  </div>
+</div>
+
+<!-- BUNDLES -->
+<div class="plan-sheet" id="plan-bundles">
+  <div class="stitle">Tablet Pricing (Add to Any Voice Plan)</div>
+  <div class="ptbl">
+    <div class="pthdr c2"><span>Configuration</span><span>Monthly Cost</span></div>
+    <div class="ptrow c2" style="background:rgba(96,165,250,.08)"><div class="pt-label">Tablet Unlimited (Standalone)</div><div class="pt-price" style="color:#60a5fa">$65</div></div>
+    <div class="ptrow c2 highlight"><div class="pt-label">Tablet with Voice Bundle</div><div class="pt-price" style="color:#4cd97b">$25</div></div>
+    <div class="ptrow c2 highlight"><div class="pt-label">2nd Tablet (BOGOHO - 50%)</div><div class="pt-price" style="color:#4cd97b">$12.50</div></div>
+    <div class="ptrow c2 highlight"><div class="pt-label">3rd+ Tablet (BOGOHO)</div><div class="pt-price" style="color:#4cd97b">$12.50 ea</div></div>
+  </div>
+
+  <div class="stitle">Pre-Built Scenarios (AE Ready)</div>
+
+  <div style="background:#1c1c1e;border:1px solid #2c2c2e;border-radius:10px;padding:13px;margin-bottom:12px">
+    <div style="font-weight:700;font-size:14px;margin-bottom:10px">📱 Small Team: 3 Voice (ProMobile) + 1 Tablet</div>
+    <div class="ptbl">
+      <div class="pthdr c2"><span>Item</span><span>Cost</span></div>
+      <div class="ptrow c2"><div>ProMobile Line 1</div><div class="pt-price">$80</div></div>
+      <div class="ptrow c2"><div>ProMobile Line 2</div><div class="pt-price">$80</div></div>
+      <div class="ptrow c2 highlight"><div>ProMobile Line 3 (FREE)</div><div class="pt-price" style="color:#4cd97b">$0</div></div>
+      <div class="ptrow c2" style="background:rgba(96,165,250,.08)"><div>Tablet Bundle</div><div class="pt-price">+$25</div></div>
+      <div class="ptrow c2" style="border-top:2px solid #2c2c2e;font-weight:800"><div>TOTAL</div><div class="pt-price" style="color:#E20074">$165</div></div>
+    </div>
+    <div style="font-size:11px;color:#8e8e93;margin-top:10px">💡 <strong>Pitch:</strong> "3 people + business tablet for $165/month. That's $55/person all-in."</div>
+  </div>
+
+  <div style="background:#1c1c1e;border:1px solid #2c2c2e;border-radius:10px;padding:13px;margin-bottom:12px">
+    <div style="font-weight:700;font-size:14px;margin-bottom:10px">📱 Growth Team: 5 Voice (CoreMobile) + 2 Tablets</div>
+    <div class="ptbl">
+      <div class="pthdr c2"><span>Item</span><span>Cost</span></div>
+      <div class="ptrow c2"><div>CoreMobile Lines 1–2</div><div class="pt-price">$120</div></div>
+      <div class="ptrow c2 highlight"><div>CoreMobile Line 3 (FREE)</div><div class="pt-price" style="color:#4cd97b">$0</div></div>
+      <div class="ptrow c2"><div>CoreMobile Lines 4–5</div><div class="pt-price">$120</div></div>
+      <div class="ptrow c2" style="background:rgba(96,165,250,.08)"><div>Tablet 1 (Bundle)</div><div class="pt-price">+$25</div></div>
+      <div class="ptrow c2 highlight"><div>Tablet 2 (BOGOHO 50%)</div><div class="pt-price" style="color:#4cd97b">+$12.50</div></div>
+      <div class="ptrow c2" style="border-top:2px solid #2c2c2e;font-weight:800"><div>TOTAL</div><div class="pt-price" style="color:#E20074">$277.50</div></div>
+    </div>
+    <div style="font-size:11px;color:#8e8e93;margin-top:10px">💡 <strong>Pitch:</strong> "5 people + 2 tablets for $277.50. Budget play for growing teams. 3rd line is free."</div>
+  </div>
+
+  <div style="background:#1c1c1e;border:1px solid #2c2c2e;border-radius:10px;padding:13px">
+    <div style="font-weight:700;font-size:14px;margin-bottom:10px">🔥 Premium Team: 5 Voice (Mixed) + 3 Tablets</div>
+    <div class="ptbl">
+      <div class="pthdr c2"><span>Item</span><span>Cost</span></div>
+      <div class="ptrow c2"><div>ProMobile Lines 1–2</div><div class="pt-price">$140</div></div>
+      <div class="ptrow c2 highlight"><div>ProMobile Line 3 (FREE)</div><div class="pt-price" style="color:#4cd97b">$0</div></div>
+      <div class="ptrow c2"><div>SuperMobile Lines 4–5</div><div class="pt-price">$160</div></div>
+      <div class="ptrow c2" style="background:rgba(96,165,250,.08)"><div>Tablet 1 (Bundle)</div><div class="pt-price">+$25</div></div>
+      <div class="ptrow c2 highlight"><div>Tablet 2 (BOGOHO 50%)</div><div class="pt-price" style="color:#4cd97b">+$12.50</div></div>
+      <div class="ptrow c2 highlight"><div>Tablet 3 (BOGOHO 50%)</div><div class="pt-price" style="color:#4cd97b">+$12.50</div></div>
+      <div class="ptrow c2" style="border-top:2px solid #2c2c2e;font-weight:800"><div>TOTAL</div><div class="pt-price" style="color:#E20074">$350</div></div>
+    </div>
+    <div style="font-size:11px;color:#8e8e93;margin-top:10px">💡 <strong>Pitch:</strong> "Premium stack: Pro for office staff, Super for executives, 3 tablets for field team at $12.50 each BOGOHO. One bill, complete coverage."</div>
+  </div>
+
+  <div class="stitle">AE Pro Tips</div>
+  <div class="info-box success">
+    <strong>✅ Lead with 3rd Line Free:</strong> "Lines 1 & 2 are paid. Line 3 is on us. That's basically 2 plans for 3 people."
+  </div>
+  <div class="info-box success">
+    <strong>✅ Tablet Bundle is Easy Upsell:</strong> Close voice first. Then: "Add a business tablet for just $25 more? Great for field/sales teams." Huge conversion.
+  </div>
+  <div class="info-box success">
+    <strong>✅ Use BOGOHO on Multiple Tablets:</strong> 2nd tablet at 50% ($12.50). 3rd tablet same rate. "Costs almost nothing to add tablets after the first."
+  </div>
+  <div class="info-box info">
+    <strong>ℹ️ Volume Quotes (14+):</strong> Per-line pricing applies. Know it but escalate to sales for complex multi-location deals with custom discounts.
+  </div>
+
+</div>
+
+<div class="safe"></div>
+</div>
+
+<script>
+// Production-grade pricing calculator with error handling
+try {
+  const PRICING = {
+    super: {
+      autopay: [[1,95],[2,160],[3,195],[4,230],[5,265],[6,300],[7,350],[8,400],[9,450],[10,500],[11,550],[12,600],[13,650]],
+      regular: [[1,100],[2,170],[3,210],[4,250],[5,290],[6,300],[7,350],[8,400],[9,450],[10,500],[11,550],[12,600],[13,650]]
+    },
+    pro: {
+      autopay: [[1,80],[2,140],[3,165],[4,190],[5,215],[6,240],[7,280],[8,320],[9,360],[10,400],[11,440],[12,480],[13,520]],
+      regular: [[1,85],[2,150],[3,180],[4,210],[5,240],[6,240],[7,280],[8,320],[9,360],[10,400],[11,440],[12,480],[13,520]]
+    },
+    core: {
+      autopay: [[1,60],[2,90],[3,105],[4,120],[5,135],[6,150],[7,175],[8,200],[9,225],[10,250],[11,275],[12,300],[13,325]],
+      regular: [[1,65],[2,100],[3,120],[4,140],[5,160],[6,150],[7,175],[8,200],[9,225],[10,250],[11,275],[12,300],[13,325]]
+    }
+  };
+
+  function switchPlan(plan) {
+    if (!plan || typeof plan !== 'string') return;
+    try {
+      document.querySelectorAll('.ptab').forEach(b => b.classList.remove('on'));
+      document.querySelectorAll('.plan-sheet').forEach(s => s.classList.remove('on'));
+      const elem = document.getElementById('plan-'+plan);
+      if (elem) {
+        elem.classList.add('on');
+        document.querySelectorAll('.ptab').forEach(b => {
+          if (b.textContent.includes(plan.charAt(0).toUpperCase())) b.classList.add('on');
+        });
+        window.scrollTo(0,0);
+      }
+    } catch(e) {
+      console.error('Plan switch error:', e);
+    }
+  }
+
+  function getPrice(plan, lines, billing) {
+    if (!PRICING[plan] || !PRICING[plan][billing]) {
+      console.warn('Invalid plan or billing:', plan, billing);
+      return 0;
+    }
+    const rates = PRICING[plan][billing];
+    for (let r of rates) {
+      if (r[0] === lines) return r[1];
+    }
+    const lastRate = rates[rates.length - 1];
+    if (lines > lastRate[0]) {
+      const perLine = { super: 50, pro: 40, core: 25 }[plan] || 0;
+      return lastRate[1] + (lines - lastRate[0]) * perLine;
+    }
+    return lastRate[1];
+  }
+
+  function updateQuote() {
+    try {
+      const planElem = document.getElementById('planSelect');
+      const linesElem = document.getElementById('lineCount');
+      const billingElem = document.getElementById('billingType');
+      const tabletsElem = document.getElementById('tabletCount');
+
+      if (!planElem || !linesElem || !billingElem || !tabletsElem) {
+        console.error('Missing form elements');
+        return;
+      }
+
+      const plan = planElem.value || 'super';
+      let lines = Math.max(1, Math.min(999, parseInt(linesElem.value) || 1));
+      const billing = billingElem.value || 'autopay';
+      let tablets = Math.max(0, Math.min(999, parseInt(tabletsElem.value) || 0));
+
+      const voiceCost = getPrice(plan, lines, billing);
+      let totalCost = voiceCost;
+
+      if (tablets > 0) {
+        totalCost = voiceCost + 25 + (tablets > 1 ? (tablets - 1) * 12.5 : 0);
+      }
+
+      const voiceCostElem = document.getElementById('voiceCost');
+      const voiceSubElem = document.getElementById('voiceSub');
+      const totalCostElem = document.getElementById('totalCost');
+      const totalSubElem = document.getElementById('totalSub');
+
+      if (voiceCostElem) voiceCostElem.textContent = '$' + voiceCost.toLocaleString();
+      if (voiceSubElem) voiceSubElem.textContent = `${lines} line${lines !== 1 ? 's' : ''} · ${billing}`;
+      if (totalCostElem) totalCostElem.textContent = '$' + totalCost.toLocaleString();
+      if (totalSubElem) totalSubElem.textContent = `${tablets} tablet${tablets !== 1 ? 's' : ''} included`;
+    } catch(e) {
+      console.error('Quote calculation error:', e);
+    }
+  }
+
+  // Restore saved values from localStorage
+  document.addEventListener('DOMContentLoaded', function() {
+    try {
+      const saved = localStorage.getItem('tmobileTool');
+      if (saved) {
+        const state = JSON.parse(saved);
+        if (state.plan) document.getElementById('planSelect').value = state.plan;
+        if (state.lines) document.getElementById('lineCount').value = state.lines;
+        if (state.billing) document.getElementById('billingType').value = state.billing;
+        if (state.tablets) document.getElementById('tabletCount').value = state.tablets;
+      }
+      updateQuote();
+    } catch(e) {
+      console.error('localStorage restore error:', e);
+    }
+  });
+
+  // Save state to localStorage
+  document.addEventListener('change', function(e) {
+    try {
+      const state = {
+        plan: document.getElementById('planSelect').value,
+        lines: document.getElementById('lineCount').value,
+        billing: document.getElementById('billingType').value,
+        tablets: document.getElementById('tabletCount').value
+      };
+      localStorage.setItem('tmobileTool', JSON.stringify(state));
+    } catch(e) {
+      console.error('localStorage save error:', e);
+    }
+  });
+
+  // Initialize
+  updateQuote();
+} catch(e) {
+  console.error('Critical error initializing pricing tool:', e);
+  document.body.innerHTML += '<div style="color:red;padding:20px">Error loading pricing tool. Please refresh the page.</div>';
+}
+</script>
+
+</body>
+</html>
